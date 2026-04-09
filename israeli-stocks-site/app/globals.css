@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { background: #0b1220; color: #e2e8f0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; }
+
+.review-body p { margin: 0.7em 0; line-height: 1.85; color: #cbd5e1; }
+.review-body strong, .review-body b { color: #f1f5f9; }
+.review-body a { color: #60a5fa; text-decoration: underline; }
+.review-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; display: block; }
+.review-body table { border-collapse: collapse; margin: 12px 0; width: 100%; background: #0b1220; }
+.review-body th, .review-body td { border: 1px solid #334155; padding: 6px 10px; font-size: 13px; }
+.review-body h3, .review-body h4 { color: #f1f5f9; margin: 1.2em 0 0.5em; font-weight: 700; }
+.review-body ul, .review-body ol { padding-inline-start: 24px; margin: 0.6em 0; }
+.review-body li { margin: 0.3em 0; color: #cbd5e1; }
+.review-body figure { margin: 10px 0; }
