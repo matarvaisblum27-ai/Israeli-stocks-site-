@@ -1,12 +1,7 @@
-import { getCategories, getInterestingYears } from '@/lib/data';
 import Shell from '@/components/Shell';
+import categoriesData from '../public/data/categories.json';
+import yearsData from '../public/data/interesting-years.json';
 
-export const revalidate = 300;
-
-export default async function Home() {
-  const [categories, interestingYears] = await Promise.all([
-    getCategories(),
-    getInterestingYears(),
-  ]);
-  return <Shell categories={categories} interestingYears={interestingYears} />;
+export default function Home() {
+  return <Shell categories={categoriesData as any} interestingYears={yearsData} />;
 }

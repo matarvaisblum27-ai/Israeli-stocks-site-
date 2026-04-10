@@ -27,19 +27,19 @@ export default function Shell({
   }>({ preamble: '', companies: [] });
   const [loading, setLoading] = useState(false);
 
-  // Load data on view change
+  // Load data on view change — from static JSON files (CDN-cached, instant)
   useEffect(() => {
     if (view.type === 'cat') {
       const cat = categories[view.idx];
       if (!cat) return;
       setLoading(true);
-      fetch(`/api/category/${cat.id}`)
+      fetch(`/data/cat-${cat.position ?? view.idx}.json`)
         .then((r) => r.json())
         .then((d) => setCompanies(d.companies || []))
         .finally(() => setLoading(false));
     } else if (view.type === 'interesting') {
       setLoading(true);
-      fetch(`/api/interesting/${view.year}`)
+      fetch(`/data/interesting-${view.year}.json`)
         .then((r) => r.json())
         .then((d) => setInteresting(d))
         .finally(() => setLoading(false));
