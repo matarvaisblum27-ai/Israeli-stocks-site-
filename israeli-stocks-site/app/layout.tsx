@@ -13,13 +13,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <footer className="border-t border-[#1e293b] bg-[#0b1220] py-8 px-4 text-center">
           <div className="mb-2 text-sm font-semibold text-slate-300">
-            אתר סקירת מניות ישראליות על ידי שלומי ארדן
+            אתר ניתוח מניות ישראליות-שלומי ארדן
           </div>
           <div className="h-px w-16 mx-auto bg-[#1e293b] my-4" />
           <div className="text-xs text-[#94a3b8] mb-2">פותח על ידי מטר וייסבלום</div>
           <div className="flex items-center justify-center gap-4 text-xs text-[#94a3b8]">
             <a
-              href="https://www.linkedin.com/in/matar-vaisblum-779944251/"
+              href="https://www.linkedin.com/in/matar-vaisblum-720172344/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 hover:text-white transition-colors"
