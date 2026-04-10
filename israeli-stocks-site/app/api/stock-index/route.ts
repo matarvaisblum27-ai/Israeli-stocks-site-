@@ -22,10 +22,32 @@ interface YahooChartResult {
   };
 }
 
-async function fetchStockHistory(ticker: string): Promise<{ dates: string[]; prices: number[] } | null> {
+/* Benchmark indices */
+const BENCHMARKS = [
+  { name: 'ת"א 125', ticker: 'TA125.TA', color: '#60a5fa' },
+  { name: 'S&P 500', ticker: '^GSPC', color: '#f59e0b' },
+  { name: 'NASDAQ', ticker: '^IXIC', color: '#a78bfa' },
+  { name: 'MSCI World', ticker: 'URTH', color: '#f472b6' },
+];
+
+function getPeriodStart(period: string): Date {
+  const now = new Date();
+  switch (period) {
+    case '1w':
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    case '1m':
+      return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    case '1y':
+      return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    case 'ytd':
+    default:
+      return new Date('2026-01-01');
+  }
+}
+
+async function fetchHistory(ticker: string, periodStart: Date): Promise<{ dates: string[]; prices: number[] } | null> {
   try {
-    // Yahoo Finance chart API - get data from Jan 1 2026 to now
-    const period1 = Math.floor(new Date('2026-01-01').getTime() / 1000);
+    const period1 = Math.floor(periodStart.getTime() / 1000);
     const period2 = Math.floor(Date.now() / 1000);
 
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${period1}&period2=${period2}&interval=1d&includeAdjustedClose=true`;
@@ -34,13 +56,12 @@ async function fetchStockHistory(ticker: string): Promise<{ dates: string[]; pri
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
-      next: { revalidate: 14400 }, // cache 4 hours
+      next: { revalidate: 14400 },
     });
 
     if (!res.ok) return null;
 
     const data: YahooChartResult = await res.json();
-
     if (!data.chart?.result?.[0]) return null;
 
     const result = data.chart.result[0];
@@ -60,46 +81,49 @@ async function fetchStockHistory(ticker: string): Promise<{ dates: string[]; pri
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || 'ytd';
+    const periodStart = getPeriodStart(period);
+
     const tickerData = loadTickerData();
     const stocks = tickerData.stocks;
 
-    // Fetch all stock histories in parallel
-    const results = await Promise.allSettled(
-      stocks.map(async (stock) => {
-        const history = await fetchStockHistory(stock.ticker);
-        return { name: stock.name, ticker: stock.ticker, history };
-      })
-    );
+    // Fetch all stock histories + benchmarks in parallel
+    const [stockResults, ...benchmarkResults] = await Promise.all([
+      // SA20 stocks
+      Promise.allSettled(
+        stocks.map(async (stock: { name: string; ticker: string }) => {
+          const history = await fetchHistory(stock.ticker, periodStart);
+          return { name: stock.name, ticker: stock.ticker, history };
+        })
+      ),
+      // Benchmarks
+      ...BENCHMARKS.map(async (b) => {
+        const history = await fetchHistory(b.ticker, periodStart);
+        return { name: b.name, ticker: b.ticker, color: b.color, history };
+      }),
+    ]);
 
-    // Collect all unique dates
-    const allDatesSet = new Set<string>();
+    // ── SA20 index calculation ──
     const stockHistories: Array<{ name: string; ticker: string; dates: string[]; prices: number[] }> = [];
-
-    for (const result of results) {
+    for (const result of stockResults) {
       if (result.status === 'fulfilled' && result.value.history) {
         const { name, ticker, history } = result.value;
         stockHistories.push({ name, ticker, dates: history.dates, prices: history.prices });
-        history.dates.forEach((d: string) => allDatesSet.add(d));
       }
     }
 
+    // All unique dates across everything
+    const allDatesSet = new Set<string>();
+    stockHistories.forEach((sh) => sh.dates.forEach((d) => allDatesSet.add(d)));
+    benchmarkResults.forEach((br) => {
+      if (br.history) br.history.dates.forEach((d: string) => allDatesSet.add(d));
+    });
     const allDates = Array.from(allDatesSet).sort();
 
-    if (allDates.length === 0 || stockHistories.length === 0) {
-      return NextResponse.json({
-        error: 'No data available',
-        stockCount: 0,
-        failedTickers: stocks.map(s => s.ticker)
-      }, { status: 200 });
-    }
-
-    // For each stock, calculate % change from its first available price
-    // Then for each date, compute the average % change across all stocks
-    const indexData: Array<{ date: string; value: number; count: number }> = [];
-
-    // Create lookup maps for each stock: date -> price
+    // SA20: average % change
     const stockMaps = stockHistories.map((sh) => {
       const map = new Map<string, number>();
       for (let i = 0; i < sh.dates.length; i++) {
@@ -107,34 +131,47 @@ export async function GET() {
           map.set(sh.dates[i], sh.prices[i]);
         }
       }
-      const basePrice = sh.prices.find((p: number) => p != null && !isNaN(p) && p > 0);
+      const basePrice = sh.prices.find((p) => p != null && !isNaN(p) && p > 0);
       return { name: sh.name, ticker: sh.ticker, map, basePrice: basePrice || 0 };
     });
 
+    const sa20Series: Array<{ date: string; value: number }> = [];
     for (const date of allDates) {
       let totalPctChange = 0;
       let count = 0;
-
       for (const sm of stockMaps) {
         if (sm.basePrice <= 0) continue;
         const price = sm.map.get(date);
         if (price != null && !isNaN(price)) {
-          const pctChange = ((price - sm.basePrice) / sm.basePrice) * 100;
-          totalPctChange += pctChange;
+          totalPctChange += ((price - sm.basePrice) / sm.basePrice) * 100;
           count++;
         }
       }
-
       if (count > 0) {
-        indexData.push({
-          date,
-          value: Math.round((totalPctChange / count) * 100) / 100,
-          count,
-        });
+        sa20Series.push({ date, value: Math.round((totalPctChange / count) * 100) / 100 });
       }
     }
 
-    // Individual stock performance (latest vs base)
+    // ── Benchmark series ──
+    const benchmarkSeries = benchmarkResults.map((br) => {
+      if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
+      const basePrice = br.history.prices.find((p: number) => p != null && !isNaN(p) && p > 0);
+      if (!basePrice) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
+
+      const data: Array<{ date: string; value: number }> = [];
+      for (let i = 0; i < br.history.dates.length; i++) {
+        const p = br.history.prices[i];
+        if (p != null && !isNaN(p)) {
+          data.push({
+            date: br.history.dates[i],
+            value: Math.round(((p - basePrice) / basePrice) * 10000) / 100,
+          });
+        }
+      }
+      return { name: br.name, ticker: br.ticker, color: br.color, data };
+    });
+
+    // Individual stock perf
     const stockPerformance = stockMaps
       .filter((sm) => sm.basePrice > 0)
       .map((sm) => {
@@ -152,16 +189,18 @@ export async function GET() {
 
     const successTickers = stockHistories.map((s) => s.ticker);
     const failedTickers = stocks
-      .filter((s) => !successTickers.includes(s.ticker))
-      .map((s) => ({ name: s.name, ticker: s.ticker }));
+      .filter((s: { ticker: string }) => !successTickers.includes(s.ticker))
+      .map((s: { name: string; ticker: string }) => ({ name: s.name, ticker: s.ticker }));
 
     return NextResponse.json({
-      indexData,
+      sa20: sa20Series,
+      benchmarks: benchmarkSeries,
       stockPerformance,
       stockCount: stockHistories.length,
       totalStocks: stocks.length,
       failedTickers,
       lastUpdated: new Date().toISOString(),
+      period,
     });
   } catch (error) {
     return NextResponse.json(

@@ -6,7 +6,7 @@ import CompanyCard from './CompanyCard';
 
 const YEARS = ['2026', '2025', '2024'];
 
-type Page = 'stocks' | 'enrichment' | 'index';
+type Page = 'stocks' | 'enrichment';
 
 type View =
   | { type: 'cat'; idx: number }
@@ -62,7 +62,7 @@ export default function Shell({
             <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
           </button>
           <span className="text-sm font-bold text-slate-100">
-            {page === 'stocks' ? 'סקירת מניות ישראל' : page === 'index' ? 'מדד מניות מעניינות 2026' : 'העשרה'}
+            {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
           </span>
         </div>
         <div className="text-[11px] text-muted">שלומי ארדן</div>
@@ -78,14 +78,6 @@ export default function Shell({
             }`}
           >
             📊 סקירת מניות ישראל
-          </button>
-          <button
-            onClick={() => switchPage('index')}
-            className={`w-full text-right px-4 py-3 text-sm flex items-center gap-2 border-t border-border ${
-              page === 'index' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            📈 מדד מניות מעניינות 2026
           </button>
           <button
             onClick={() => switchPage('enrichment')}
@@ -107,7 +99,6 @@ export default function Shell({
       {page === 'stocks' && (
         <StocksPage categories={categories} interestingYears={interestingYears} />
       )}
-      {page === 'index' && <StockIndexPage />}
       {page === 'enrichment' && <EnrichmentPage />}
     </div>
   );
@@ -220,6 +211,9 @@ function StocksPage({
       </aside>
 
       <main className="flex-1 p-6 max-w-5xl mx-auto">
+        {/* SA20 Index Chart — always visible above everything */}
+        <SA20Chart />
+
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
         {view.type === 'intro' && intro && <IntroView intro={intro} />}
@@ -248,39 +242,54 @@ function StocksPage({
 }
 
 /* ════════════════════════════════════════════════════════════════
-   Stock Index Page — Average performance chart of 2026 interesting stocks
+   SA20 Comparison Chart — shown above intro on main stocks page
    ════════════════════════════════════════════════════════════════ */
-interface IndexDataPoint {
+interface SeriesPoint {
   date: string;
   value: number;
-  count: number;
 }
-interface StockPerf {
+interface BenchmarkSeries {
   name: string;
   ticker: string;
-  pctChange: number;
-  latestPrice: number;
+  color: string;
+  data: SeriesPoint[];
 }
-interface IndexResponse {
-  indexData: IndexDataPoint[];
-  stockPerformance: StockPerf[];
+interface SA20Response {
+  sa20: SeriesPoint[];
+  benchmarks: BenchmarkSeries[];
+  stockPerformance: Array<{ name: string; ticker: string; pctChange: number; latestPrice: number }>;
   stockCount: number;
   totalStocks: number;
   failedTickers: Array<{ name: string; ticker: string }>;
   lastUpdated: string;
+  period: string;
   error?: string;
 }
 
-function StockIndexPage() {
-  const [data, setData] = useState<IndexResponse | null>(null);
+const PERIODS = [
+  { key: '1w', label: 'שבוע' },
+  { key: '1m', label: 'חודש' },
+  { key: 'ytd', label: 'מתחילת השנה' },
+  { key: '1y', label: 'שנה' },
+] as const;
+
+const SA20_COLOR = '#34d399';
+
+function SA20Chart() {
+  const [data, setData] = useState<SA20Response | null>(null);
+  const [period, setPeriod] = useState('ytd');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
+  const [showTable, setShowTable] = useState(false);
 
   useEffect(() => {
-    fetch('/api/stock-index')
+    setLoading(true);
+    setError(null);
+    fetch(`/api/stock-index?period=${period}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.error && !d.indexData) {
+        if (d.error && !d.sa20) {
           setError(d.error);
         } else {
           setData(d);
@@ -291,184 +300,288 @@ function StockIndexPage() {
         setError(String(e));
         setLoading(false);
       });
-  }, []);
+  }, [period]);
 
-  if (loading) {
-    return (
-      <div className="flex-1 p-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-100 mb-4">📈 מדד מניות מעניינות 2026</h1>
-        <div className="text-muted text-sm">טוען נתוני מניות...</div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="flex-1 p-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-100 mb-4">📈 מדד מניות מעניינות 2026</h1>
-        <div className="bg-red-900/30 border border-red-800 rounded-xl p-4 text-red-300 text-sm">
-          {error || 'אין נתונים זמינים'}
-        </div>
-      </div>
-    );
-  }
-
-  const latestPoint = data.indexData[data.indexData.length - 1];
-  const isPositive = latestPoint && latestPoint.value >= 0;
+  // Build all series for the chart
+  const allSeries = useMemo(() => {
+    if (!data) return [];
+    const series: Array<{ name: string; color: string; data: SeriesPoint[] }> = [];
+    if (data.sa20.length > 0) {
+      series.push({ name: 'SA20', color: SA20_COLOR, data: data.sa20 });
+    }
+    for (const b of data.benchmarks) {
+      if (b.data.length > 0) {
+        series.push({ name: b.name, color: b.color, data: b.data });
+      }
+    }
+    return series;
+  }, [data]);
 
   return (
-    <div className="flex-1 p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-100 mb-2">📈 מדד מניות מעניינות 2026</h1>
-      <p className="text-muted text-sm mb-4">
-        שינוי ממוצע של {data.stockCount} מניות מעניינות מתחילת 2026
-      </p>
-
-      {/* Big number */}
-      {latestPoint && (
-        <div className="bg-panel border border-border rounded-xl p-6 mb-6 text-center">
-          <div className={`text-5xl font-bold mb-1 ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
-            {isPositive ? '+' : ''}{latestPoint.value}%
-          </div>
-          <div className="text-muted text-xs">
-            עדכון אחרון: {new Date(data.lastUpdated).toLocaleDateString('he-IL')}
-            {' · '}{data.stockCount}/{data.totalStocks} מניות
-          </div>
+    <div className="bg-panel border border-border rounded-xl mb-6 overflow-hidden">
+      {/* Header */}
+      <div className="p-4 pb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+            📈 מדד SA20
+          </h2>
+          <p className="text-muted text-xs mt-0.5">
+            {data ? `${data.stockCount} מניות מעניינות 2026 לעומת מדדי ייחוס` : 'טוען...'}
+          </p>
         </div>
-      )}
-
-      {/* Chart */}
-      {data.indexData.length > 1 && (
-        <div className="bg-panel border border-border rounded-xl p-4 mb-6">
-          <div className="text-sm font-semibold text-slate-300 mb-3">ביצועי המדד מתחילת 2026</div>
-          <IndexChart data={data.indexData} />
-        </div>
-      )}
-
-      {/* Individual stocks table */}
-      {data.stockPerformance.length > 0 && (
-        <div className="bg-panel border border-border rounded-xl overflow-hidden mb-6">
-          <div className="text-sm font-semibold text-slate-300 p-4 border-b border-border">
-            ביצועי מניות בודדות
-          </div>
-          <div className="divide-y divide-border">
-            {data.stockPerformance.map((s) => (
-              <div key={s.ticker} className="flex justify-between items-center px-4 py-3">
-                <div>
-                  <div className="text-sm text-slate-200">{s.name}</div>
-                  <div className="text-[11px] text-muted">{s.ticker}</div>
-                </div>
-                <div className={`text-sm font-semibold ${s.pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {s.pctChange >= 0 ? '+' : ''}{s.pctChange}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Failed tickers */}
-      {data.failedTickers.length > 0 && (
-        <div className="bg-amber-900/20 border border-amber-800/50 rounded-xl p-4 text-amber-300 text-xs">
-          <div className="font-semibold mb-1">לא הצלחנו לטעון {data.failedTickers.length} מניות:</div>
-          {data.failedTickers.map((f) => (
-            <span key={f.ticker} className="inline-block bg-amber-900/40 rounded px-2 py-0.5 ml-1 mb-1">
-              {f.name} ({f.ticker})
-            </span>
+        {/* Period selector */}
+        <div className="flex gap-1.5">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
+                period === p.key
+                  ? 'bg-accent border-accent text-white'
+                  : 'bg-bg border-border text-muted hover:text-slate-300'
+              }`}
+            >
+              {p.label}
+            </button>
           ))}
+        </div>
+      </div>
+
+      {/* SA20 big number */}
+      {data && data.sa20.length > 0 && (
+        <div className="px-4 pt-3 flex items-baseline gap-3">
+          <span className={`text-3xl font-bold ${data.sa20[data.sa20.length - 1].value >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            {data.sa20[data.sa20.length - 1].value >= 0 ? '+' : ''}
+            {data.sa20[data.sa20.length - 1].value}%
+          </span>
+          <span className="text-muted text-xs">
+            SA20 · {PERIODS.find((p) => p.key === period)?.label}
+          </span>
+        </div>
+      )}
+
+      {/* Chart area */}
+      <div className="p-4">
+        {loading && <div className="text-muted text-sm py-8 text-center">טוען נתוני מניות...</div>}
+        {error && (
+          <div className="bg-red-900/30 border border-red-800 rounded-lg p-3 text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+        {!loading && !error && allSeries.length > 0 && (
+          <MultiLineChart
+            series={allSeries}
+            hoveredSeries={hoveredSeries}
+            onHoverSeries={setHoveredSeries}
+          />
+        )}
+      </div>
+
+      {/* Legend */}
+      {!loading && allSeries.length > 0 && (
+        <div className="px-4 pb-3 flex flex-wrap gap-x-4 gap-y-1.5 justify-center">
+          {allSeries.map((s) => {
+            const lastVal = s.data[s.data.length - 1]?.value;
+            return (
+              <button
+                key={s.name}
+                className={`flex items-center gap-1.5 text-xs transition-opacity ${
+                  hoveredSeries && hoveredSeries !== s.name ? 'opacity-30' : 'opacity-100'
+                }`}
+                onMouseEnter={() => setHoveredSeries(s.name)}
+                onMouseLeave={() => setHoveredSeries(null)}
+              >
+                <span className="w-3 h-[3px] rounded-full inline-block" style={{ background: s.color }} />
+                <span className="text-slate-300">{s.name}</span>
+                {lastVal != null && (
+                  <span className={`font-semibold ${lastVal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {lastVal >= 0 ? '+' : ''}{lastVal}%
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Expandable individual stocks table */}
+      {data && data.stockPerformance.length > 0 && (
+        <div className="border-t border-border">
+          <button
+            onClick={() => setShowTable(!showTable)}
+            className="w-full px-4 py-2.5 flex items-center justify-between text-xs text-muted hover:text-slate-300 transition-colors"
+          >
+            <span>ביצועי {data.stockCount} מניות בודדות</span>
+            <span>{showTable ? '▴' : '▾'}</span>
+          </button>
+          {showTable && (
+            <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
+              {data.stockPerformance.map((s) => (
+                <div key={s.ticker} className="flex justify-between items-center px-4 py-2">
+                  <div>
+                    <div className="text-sm text-slate-200">{s.name}</div>
+                    <div className="text-[10px] text-muted">{s.ticker}</div>
+                  </div>
+                  <div className={`text-sm font-semibold ${s.pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {s.pctChange >= 0 ? '+' : ''}{s.pctChange}%
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Last updated */}
+      {data && (
+        <div className="px-4 py-2 text-[10px] text-muted border-t border-border text-center">
+          עדכון: {new Date(data.lastUpdated).toLocaleDateString('he-IL')}
+          {data.failedTickers.length > 0 && ` · ${data.failedTickers.length} מניות לא נטענו`}
         </div>
       )}
     </div>
   );
 }
 
-/* Simple SVG chart component (no external dependency needed) */
-function IndexChart({ data }: { data: IndexDataPoint[] }) {
-  if (data.length < 2) return null;
-
+/* ── Multi-line SVG Chart ── */
+function MultiLineChart({
+  series,
+  hoveredSeries,
+  onHoverSeries,
+}: {
+  series: Array<{ name: string; color: string; data: SeriesPoint[] }>;
+  hoveredSeries: string | null;
+  onHoverSeries: (name: string | null) => void;
+}) {
   const width = 800;
-  const height = 300;
-  const padding = { top: 20, right: 20, bottom: 30, left: 50 };
-
-  const values = data.map((d) => d.value);
-  const minVal = Math.min(0, ...values);
-  const maxVal = Math.max(0, ...values);
-  const range = maxVal - minVal || 1;
-
+  const height = 320;
+  const padding = { top: 15, right: 15, bottom: 28, left: 48 };
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
-  const points = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartW;
-    const y = padding.top + chartH - ((d.value - minVal) / range) * chartH;
-    return { x, y, date: d.date, value: d.value };
-  });
+  // Collect all dates and values to determine scales
+  const allDatesSet = new Set<string>();
+  let globalMin = 0;
+  let globalMax = 0;
+  for (const s of series) {
+    for (const d of s.data) {
+      allDatesSet.add(d.date);
+      if (d.value < globalMin) globalMin = d.value;
+      if (d.value > globalMax) globalMax = d.value;
+    }
+  }
+  const allDates = Array.from(allDatesSet).sort();
+  if (allDates.length < 2) return null;
 
-  const zeroY = padding.top + chartH - ((0 - minVal) / range) * chartH;
+  // Add some padding to y range
+  const yPad = Math.max(1, (globalMax - globalMin) * 0.1);
+  const minVal = globalMin - yPad;
+  const maxVal = globalMax + yPad;
+  const range = maxVal - minVal || 1;
 
-  // SVG path
-  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const dateToX = (date: string) => {
+    const idx = allDates.indexOf(date);
+    if (idx < 0) return null;
+    return padding.left + (idx / (allDates.length - 1)) * chartW;
+  };
+  const valToY = (val: number) => padding.top + chartH - ((val - minVal) / range) * chartH;
 
-  // Area fill
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${zeroY} L ${points[0].x} ${zeroY} Z`;
+  const zeroY = valToY(0);
 
-  const lastValue = values[values.length - 1];
-  const color = lastValue >= 0 ? '#34d399' : '#f87171';
-  const fillColor = lastValue >= 0 ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)';
-
-  // Y-axis labels
-  const ySteps = 5;
+  // Y-axis grid
+  const ySteps = 6;
   const yLabels = Array.from({ length: ySteps + 1 }, (_, i) => {
     const val = minVal + (range * i) / ySteps;
-    return { val: Math.round(val * 10) / 10, y: padding.top + chartH - (i / ySteps) * chartH };
+    return { val: Math.round(val * 10) / 10, y: valToY(val) };
   });
 
-  // X-axis labels (show ~5 dates)
-  const xStep = Math.max(1, Math.floor(data.length / 5));
-  const xLabels = data.filter((_, i) => i % xStep === 0 || i === data.length - 1);
+  // X-axis labels
+  const xStep = Math.max(1, Math.floor(allDates.length / 6));
+  const xLabelDates = allDates.filter((_, i) => i % xStep === 0 || i === allDates.length - 1);
+
+  // Build paths
+  const paths = series.map((s) => {
+    const pts: Array<{ x: number; y: number }> = [];
+    for (const d of s.data) {
+      const x = dateToX(d.date);
+      if (x == null) continue;
+      pts.push({ x, y: valToY(d.value) });
+    }
+    const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+    return { name: s.name, color: s.color, linePath, pts };
+  });
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" onMouseLeave={() => onHoverSeries(null)}>
       {/* Grid lines */}
       {yLabels.map((l) => (
         <g key={l.val}>
-          <line
-            x1={padding.left}
-            y1={l.y}
-            x2={width - padding.right}
-            y2={l.y}
-            stroke="#1e293b"
-            strokeWidth={1}
-          />
-          <text x={padding.left - 8} y={l.y + 4} textAnchor="end" fontSize={11} fill="#94a3b8">
+          <line x1={padding.left} y1={l.y} x2={width - padding.right} y2={l.y} stroke="#1e293b" strokeWidth={1} />
+          <text x={padding.left - 6} y={l.y + 4} textAnchor="end" fontSize={10} fill="#64748b">
             {l.val}%
           </text>
         </g>
       ))}
 
       {/* Zero line */}
-      <line
-        x1={padding.left}
-        y1={zeroY}
-        x2={width - padding.right}
-        y2={zeroY}
-        stroke="#475569"
-        strokeWidth={1}
-        strokeDasharray="4 4"
-      />
+      {globalMin < 0 && globalMax > 0 && (
+        <line
+          x1={padding.left} y1={zeroY}
+          x2={width - padding.right} y2={zeroY}
+          stroke="#475569" strokeWidth={1} strokeDasharray="4 4"
+        />
+      )}
 
-      {/* Area */}
-      <path d={areaPath} fill={fillColor} />
-
-      {/* Line */}
-      <path d={linePath} fill="none" stroke={color} strokeWidth={2.5} />
-
-      {/* Date labels */}
-      {xLabels.map((d) => {
-        const idx = data.indexOf(d);
-        const x = padding.left + (idx / (data.length - 1)) * chartW;
+      {/* Lines */}
+      {paths.map((p) => {
+        const isHovered = hoveredSeries === p.name;
+        const isFaded = hoveredSeries && !isHovered;
         return (
-          <text key={d.date} x={x} y={height - 5} textAnchor="middle" fontSize={10} fill="#94a3b8">
-            {d.date.slice(5)}
+          <g key={p.name}>
+            <path
+              d={p.linePath}
+              fill="none"
+              stroke={p.color}
+              strokeWidth={p.name === 'SA20' ? 3 : 2}
+              opacity={isFaded ? 0.15 : 1}
+              className="transition-opacity duration-200"
+            />
+            {/* Invisible wider hit-area for hover */}
+            <path
+              d={p.linePath}
+              fill="none"
+              stroke="transparent"
+              strokeWidth={14}
+              onMouseEnter={() => onHoverSeries(p.name)}
+              style={{ cursor: 'pointer' }}
+            />
+          </g>
+        );
+      })}
+
+      {/* Endpoint dots */}
+      {paths.map((p) => {
+        const last = p.pts[p.pts.length - 1];
+        if (!last) return null;
+        const isFaded = hoveredSeries && hoveredSeries !== p.name;
+        return (
+          <circle
+            key={`dot-${p.name}`}
+            cx={last.x} cy={last.y} r={3.5}
+            fill={p.color}
+            opacity={isFaded ? 0.15 : 1}
+            className="transition-opacity duration-200"
+          />
+        );
+      })}
+
+      {/* X labels */}
+      {xLabelDates.map((d) => {
+        const x = dateToX(d);
+        if (x == null) return null;
+        return (
+          <text key={d} x={x} y={height - 4} textAnchor="middle" fontSize={10} fill="#64748b">
+            {d.slice(5)}
           </text>
         );
       })}
