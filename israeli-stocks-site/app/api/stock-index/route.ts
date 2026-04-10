@@ -184,8 +184,7 @@ export async function GET(request: Request) {
           pctChange: Math.round(pctChange * 100) / 100,
           latestPrice,
         };
-      })
-      .sort((a, b) => b.pctChange - a.pctChange);
+      });
 
     const successTickers = stockHistories.map((s) => s.ticker);
     const failedTickers = stocks
