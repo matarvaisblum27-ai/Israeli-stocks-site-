@@ -139,6 +139,33 @@ function StocksPage({
     companies: InterestingEntry[];
   }>({ preamble: '', companies: [] });
   const [loading, setLoading] = useState(false);
+  const [searchIndex, setSearchIndex] = useState<Array<{ name: string; catName: string; catPos: number; catIdx: number }>>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Load search index once
+  useEffect(() => {
+    fetch('/data/search-index.json')
+      .then((r) => r.json())
+      .then(setSearchIndex)
+      .catch(() => {});
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+    const q = searchQuery.toLowerCase();
+    return searchIndex
+      .filter((c) => c.name.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [searchQuery, searchIndex]);
+
+  const handleSelectResult = useCallback((item: { catIdx: number; catPos: number; name: string }) => {
+    setView({ type: 'cat', idx: item.catIdx });
+    setFilter(item.name);
+    setSearchQuery('');
+    setShowDropdown(false);
+    onMobileSidebarClose();
+  }, [onMobileSidebarClose]);
 
   useEffect(() => {
     if (view.type === 'cat') {
@@ -169,13 +196,37 @@ function StocksPage({
   /* Sidebar content — reused in both desktop aside and mobile drawer */
   const sidebarContent = (
     <>
-      <input
-        type="search"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        placeholder="חיפוש חברה או טקסט..."
-        className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-slate-200 mb-3 placeholder:text-slate-500 focus:outline-none focus:border-accent"
-      />
+      {/* Smart search with dropdown */}
+      <div className="relative mb-3">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          placeholder="חיפוש חברה..."
+          className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-accent"
+        />
+        {showDropdown && searchResults.length > 0 && (
+          <div className="absolute top-full right-0 left-0 z-50 bg-[#0f1a2e] border border-border rounded-xl shadow-2xl overflow-hidden mt-1">
+            {searchResults.map((item, i) => (
+              <button
+                key={i}
+                onMouseDown={() => handleSelectResult(item)}
+                className="w-full text-right px-3 py-2.5 flex flex-col gap-0.5 hover:bg-slate-800 border-b border-border/50 last:border-0 transition-colors"
+              >
+                <span className="text-sm text-slate-100 font-medium">{item.name}</span>
+                <span className="text-[11px] text-muted">{item.catName}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {showDropdown && searchQuery.length >= 2 && searchResults.length === 0 && (
+          <div className="absolute top-full right-0 left-0 z-50 bg-[#0f1a2e] border border-border rounded-xl shadow-2xl mt-1 px-3 py-3 text-sm text-muted text-center">
+            לא נמצאו תוצאות
+          </div>
+        )}
+      </div>
       <button
         onClick={() => { setView({ type: 'intro' }); onMobileSidebarClose(); }}
         className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
