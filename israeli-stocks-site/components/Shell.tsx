@@ -1,17 +1,113 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Category, Company, InterestingEntry } from '@/lib/supabase';
 import CompanyCard from './CompanyCard';
 
 const YEARS = ['2026', '2025', '2024'];
+
+type Page = 'stocks' | 'enrichment';
 
 type View =
   | { type: 'cat'; idx: number }
   | { type: 'interesting'; year: string }
   | { type: 'intro' };
 
+/* ── Video type ── */
+interface VideoItem {
+  id: string;
+  title: string;
+  priority: boolean;
+}
+
+/* ── Excluded video keywords ── */
+const EXCLUDED_KEYWORDS = ['צירופי מקרים', 'רועי כפרי', 'david thompson', 'thai food'];
+
+function isExcluded(title: string) {
+  const lower = title.toLowerCase();
+  return EXCLUDED_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()));
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Root Shell
+   ════════════════════════════════════════════════════════════════ */
 export default function Shell({
+  categories,
+  interestingYears,
+}: {
+  categories: Category[];
+  interestingYears: string[];
+}) {
+  const [page, setPage] = useState<Page>('stocks');
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const switchPage = useCallback((p: Page) => {
+    setPage(p);
+    setMenuOpen(false);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* ── Top navbar ── */}
+      <nav className="bg-panel border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          {/* Hamburger button */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex flex-col justify-center items-center w-8 h-8 gap-[5px] rounded-md hover:bg-slate-800 transition-colors"
+            aria-label="תפריט"
+          >
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+          </button>
+          <span className="text-sm font-bold text-slate-100">
+            {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
+          </span>
+        </div>
+        <div className="text-[11px] text-muted">שלומי ארדן</div>
+      </nav>
+
+      {/* ── Dropdown menu ── */}
+      {menuOpen && (
+        <div className="absolute top-[44px] right-4 z-50 bg-panel border border-border rounded-xl shadow-xl overflow-hidden w-56">
+          <button
+            onClick={() => switchPage('stocks')}
+            className={`w-full text-right px-4 py-3 text-sm flex items-center gap-2 ${
+              page === 'stocks' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            📊 סקירת מניות ישראל
+          </button>
+          <button
+            onClick={() => switchPage('enrichment')}
+            className={`w-full text-right px-4 py-3 text-sm flex items-center gap-2 border-t border-border ${
+              page === 'enrichment' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            🎓 העשרה
+          </button>
+        </div>
+      )}
+
+      {/* ── Click-away overlay ── */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+      )}
+
+      {/* ── Page content ── */}
+      {page === 'stocks' && (
+        <StocksPage categories={categories} interestingYears={interestingYears} />
+      )}
+      {page === 'enrichment' && <EnrichmentPage />}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Stocks Page (existing functionality)
+   ════════════════════════════════════════════════════════════════ */
+function StocksPage({
   categories,
   interestingYears,
 }: {
@@ -27,7 +123,6 @@ export default function Shell({
   }>({ preamble: '', companies: [] });
   const [loading, setLoading] = useState(false);
 
-  // Load data on view change — from static JSON files (CDN-cached, instant)
   useEffect(() => {
     if (view.type === 'cat') {
       const cat = categories[view.idx];
@@ -46,7 +141,6 @@ export default function Shell({
     }
   }, [view, categories]);
 
-  // Filter sidebar categories by count matching filter
   const filteredCategories = useMemo(() => {
     return categories.map((c, i) => ({ cat: c, idx: i }));
   }, [categories]);
@@ -56,15 +150,8 @@ export default function Shell({
     | null;
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-[280px] bg-panel border-l border-border p-3 sticky top-0 h-screen overflow-y-auto shrink-0">
-        <div className="mb-3">
-          <h1 className="text-base font-bold text-slate-100 mb-1">
-            סקירת מניות ישראל
-          </h1>
-          <div className="text-[11px] text-muted">2024 · 2025 · 2026</div>
-        </div>
-
+    <div className="flex flex-1">
+      <aside className="w-[280px] bg-panel border-l border-border p-3 sticky top-[44px] h-[calc(100vh-44px)] overflow-y-auto shrink-0">
         <input
           type="search"
           value={filter}
@@ -126,9 +213,7 @@ export default function Shell({
       <main className="flex-1 p-6 max-w-5xl mx-auto">
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
-        {view.type === 'intro' && intro && (
-          <IntroView intro={intro} />
-        )}
+        {view.type === 'intro' && intro && <IntroView intro={intro} />}
 
         {view.type === 'cat' && !loading && (
           <CategoryView
@@ -153,6 +238,125 @@ export default function Shell({
   );
 }
 
+/* ════════════════════════════════════════════════════════════════
+   Enrichment Page — YouTube video gallery
+   ════════════════════════════════════════════════════════════════ */
+function EnrichmentPage() {
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Load video list, then fetch titles from YouTube oEmbed
+    fetch('/data/videos.json')
+      .then((r) => r.json())
+      .then(async (vids: VideoItem[]) => {
+        // Fetch titles in parallel from noembed (CORS-friendly)
+        const withTitles = await Promise.all(
+          vids.map(async (v) => {
+            try {
+              const res = await fetch(
+                `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v.id}`
+              );
+              const data = await res.json();
+              return { ...v, title: data.title || v.title || '' };
+            } catch {
+              return v;
+            }
+          })
+        );
+
+        // Filter out excluded videos
+        const filtered = withTitles.filter((v) => !v.title || !isExcluded(v.title));
+
+        // Sort: priority (podcasts) first, then rest
+        filtered.sort((a, b) => {
+          if (a.priority && !b.priority) return -1;
+          if (!a.priority && b.priority) return 1;
+          return 0;
+        });
+
+        setVideos(filtered);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="flex-1 p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold text-slate-100 mb-2">🎓 העשרה</h1>
+      <p className="text-muted text-sm mb-6">
+        סרטונים ופודקאסטים של שלומי ארדן — שיחות זום, ראיונות, וניתוחים
+      </p>
+
+      {loading && <div className="text-muted text-sm">טוען סרטונים...</div>}
+
+      {/* Video playing modal */}
+      {playingId && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPlayingId(null)}>
+          <div className="relative w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
+            <iframe
+              src={`https://www.youtube.com/embed/${playingId}?autoplay=1`}
+              className="w-full h-full rounded-xl"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            <button
+              onClick={() => setPlayingId(null)}
+              className="absolute -top-10 left-0 text-white text-2xl hover:text-red-400 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Video grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {videos.map((v) => (
+          <div
+            key={v.id}
+            onClick={() => setPlayingId(v.id)}
+            className="bg-panel border border-border rounded-xl overflow-hidden cursor-pointer group hover:border-accent transition-colors"
+          >
+            {/* Thumbnail */}
+            <div className="relative aspect-video bg-slate-900">
+              <img
+                src={`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`}
+                alt={v.title || 'סרטון'}
+                className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+              />
+              {/* Play button overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current mr-[-2px]">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+              {/* Priority badge */}
+              {v.priority && (
+                <div className="absolute top-2 right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  פודקאסט שנתי
+                </div>
+              )}
+            </div>
+            {/* Title */}
+            <div className="p-3">
+              <div className="text-sm font-medium text-slate-200 line-clamp-2 leading-relaxed">
+                {v.title || 'טוען...'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Sub-views (unchanged)
+   ════════════════════════════════════════════════════════════════ */
 function IntroView({ intro }: { intro: Record<string, string> }) {
   const years = Object.keys(intro).sort().reverse();
   const [year, setYear] = useState(years[0]);
