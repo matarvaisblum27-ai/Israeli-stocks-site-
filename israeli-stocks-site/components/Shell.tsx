@@ -211,12 +211,14 @@ function StocksPage({
       </aside>
 
       <main className="flex-1 p-6 max-w-5xl mx-auto">
-        {/* SA20 Index Chart — always visible above everything */}
-        <SA20Chart />
-
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
-        {view.type === 'intro' && intro && <IntroView intro={intro} />}
+        {view.type === 'intro' && intro && (
+          <>
+            <SA20Chart />
+            <IntroView intro={intro} />
+          </>
+        )}
 
         {view.type === 'cat' && !loading && (
           <CategoryView
