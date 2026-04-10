@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // output: 'export', // removed to enable API routes for stock data
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'i0.wp.com' },

@@ -6,7 +6,7 @@ import CompanyCard from './CompanyCard';
 
 const YEARS = ['2026', '2025', '2024'];
 
-type Page = 'stocks' | 'enrichment';
+type Page = 'stocks' | 'enrichment' | 'index';
 
 type View =
   | { type: 'cat'; idx: number }
@@ -62,7 +62,7 @@ export default function Shell({
             <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
           </button>
           <span className="text-sm font-bold text-slate-100">
-            {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
+            {page === 'stocks' ? 'סקירת מניות ישראל' : page === 'index' ? 'מדד מניות מעניינות 2026' : 'העשרה'}
           </span>
         </div>
         <div className="text-[11px] text-muted">שלומי ארדן</div>
@@ -78,6 +78,14 @@ export default function Shell({
             }`}
           >
             📊 סקירת מניות ישראל
+          </button>
+          <button
+            onClick={() => switchPage('index')}
+            className={`w-full text-right px-4 py-3 text-sm flex items-center gap-2 border-t border-border ${
+              page === 'index' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            📈 מדד מניות מעניינות 2026
           </button>
           <button
             onClick={() => switchPage('enrichment')}
@@ -99,6 +107,7 @@ export default function Shell({
       {page === 'stocks' && (
         <StocksPage categories={categories} interestingYears={interestingYears} />
       )}
+      {page === 'index' && <StockIndexPage />}
       {page === 'enrichment' && <EnrichmentPage />}
     </div>
   );
@@ -235,6 +244,235 @@ function StocksPage({
         )}
       </main>
     </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Stock Index Page — Average performance chart of 2026 interesting stocks
+   ════════════════════════════════════════════════════════════════ */
+interface IndexDataPoint {
+  date: string;
+  value: number;
+  count: number;
+}
+interface StockPerf {
+  name: string;
+  ticker: string;
+  pctChange: number;
+  latestPrice: number;
+}
+interface IndexResponse {
+  indexData: IndexDataPoint[];
+  stockPerformance: StockPerf[];
+  stockCount: number;
+  totalStocks: number;
+  failedTickers: Array<{ name: string; ticker: string }>;
+  lastUpdated: string;
+  error?: string;
+}
+
+function StockIndexPage() {
+  const [data, setData] = useState<IndexResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/stock-index')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error && !d.indexData) {
+          setError(d.error);
+        } else {
+          setData(d);
+        }
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(String(e));
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-6 max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold text-slate-100 mb-4">📈 מדד מניות מעניינות 2026</h1>
+        <div className="text-muted text-sm">טוען נתוני מניות...</div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex-1 p-6 max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold text-slate-100 mb-4">📈 מדד מניות מעניינות 2026</h1>
+        <div className="bg-red-900/30 border border-red-800 rounded-xl p-4 text-red-300 text-sm">
+          {error || 'אין נתונים זמינים'}
+        </div>
+      </div>
+    );
+  }
+
+  const latestPoint = data.indexData[data.indexData.length - 1];
+  const isPositive = latestPoint && latestPoint.value >= 0;
+
+  return (
+    <div className="flex-1 p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold text-slate-100 mb-2">📈 מדד מניות מעניינות 2026</h1>
+      <p className="text-muted text-sm mb-4">
+        שינוי ממוצע של {data.stockCount} מניות מעניינות מתחילת 2026
+      </p>
+
+      {/* Big number */}
+      {latestPoint && (
+        <div className="bg-panel border border-border rounded-xl p-6 mb-6 text-center">
+          <div className={`text-5xl font-bold mb-1 ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+            {isPositive ? '+' : ''}{latestPoint.value}%
+          </div>
+          <div className="text-muted text-xs">
+            עדכון אחרון: {new Date(data.lastUpdated).toLocaleDateString('he-IL')}
+            {' · '}{data.stockCount}/{data.totalStocks} מניות
+          </div>
+        </div>
+      )}
+
+      {/* Chart */}
+      {data.indexData.length > 1 && (
+        <div className="bg-panel border border-border rounded-xl p-4 mb-6">
+          <div className="text-sm font-semibold text-slate-300 mb-3">ביצועי המדד מתחילת 2026</div>
+          <IndexChart data={data.indexData} />
+        </div>
+      )}
+
+      {/* Individual stocks table */}
+      {data.stockPerformance.length > 0 && (
+        <div className="bg-panel border border-border rounded-xl overflow-hidden mb-6">
+          <div className="text-sm font-semibold text-slate-300 p-4 border-b border-border">
+            ביצועי מניות בודדות
+          </div>
+          <div className="divide-y divide-border">
+            {data.stockPerformance.map((s) => (
+              <div key={s.ticker} className="flex justify-between items-center px-4 py-3">
+                <div>
+                  <div className="text-sm text-slate-200">{s.name}</div>
+                  <div className="text-[11px] text-muted">{s.ticker}</div>
+                </div>
+                <div className={`text-sm font-semibold ${s.pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {s.pctChange >= 0 ? '+' : ''}{s.pctChange}%
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Failed tickers */}
+      {data.failedTickers.length > 0 && (
+        <div className="bg-amber-900/20 border border-amber-800/50 rounded-xl p-4 text-amber-300 text-xs">
+          <div className="font-semibold mb-1">לא הצלחנו לטעון {data.failedTickers.length} מניות:</div>
+          {data.failedTickers.map((f) => (
+            <span key={f.ticker} className="inline-block bg-amber-900/40 rounded px-2 py-0.5 ml-1 mb-1">
+              {f.name} ({f.ticker})
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Simple SVG chart component (no external dependency needed) */
+function IndexChart({ data }: { data: IndexDataPoint[] }) {
+  if (data.length < 2) return null;
+
+  const width = 800;
+  const height = 300;
+  const padding = { top: 20, right: 20, bottom: 30, left: 50 };
+
+  const values = data.map((d) => d.value);
+  const minVal = Math.min(0, ...values);
+  const maxVal = Math.max(0, ...values);
+  const range = maxVal - minVal || 1;
+
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = data.map((d, i) => {
+    const x = padding.left + (i / (data.length - 1)) * chartW;
+    const y = padding.top + chartH - ((d.value - minVal) / range) * chartH;
+    return { x, y, date: d.date, value: d.value };
+  });
+
+  const zeroY = padding.top + chartH - ((0 - minVal) / range) * chartH;
+
+  // SVG path
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+  // Area fill
+  const areaPath = `${linePath} L ${points[points.length - 1].x} ${zeroY} L ${points[0].x} ${zeroY} Z`;
+
+  const lastValue = values[values.length - 1];
+  const color = lastValue >= 0 ? '#34d399' : '#f87171';
+  const fillColor = lastValue >= 0 ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)';
+
+  // Y-axis labels
+  const ySteps = 5;
+  const yLabels = Array.from({ length: ySteps + 1 }, (_, i) => {
+    const val = minVal + (range * i) / ySteps;
+    return { val: Math.round(val * 10) / 10, y: padding.top + chartH - (i / ySteps) * chartH };
+  });
+
+  // X-axis labels (show ~5 dates)
+  const xStep = Math.max(1, Math.floor(data.length / 5));
+  const xLabels = data.filter((_, i) => i % xStep === 0 || i === data.length - 1);
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+      {/* Grid lines */}
+      {yLabels.map((l) => (
+        <g key={l.val}>
+          <line
+            x1={padding.left}
+            y1={l.y}
+            x2={width - padding.right}
+            y2={l.y}
+            stroke="#1e293b"
+            strokeWidth={1}
+          />
+          <text x={padding.left - 8} y={l.y + 4} textAnchor="end" fontSize={11} fill="#94a3b8">
+            {l.val}%
+          </text>
+        </g>
+      ))}
+
+      {/* Zero line */}
+      <line
+        x1={padding.left}
+        y1={zeroY}
+        x2={width - padding.right}
+        y2={zeroY}
+        stroke="#475569"
+        strokeWidth={1}
+        strokeDasharray="4 4"
+      />
+
+      {/* Area */}
+      <path d={areaPath} fill={fillColor} />
+
+      {/* Line */}
+      <path d={linePath} fill="none" stroke={color} strokeWidth={2.5} />
+
+      {/* Date labels */}
+      {xLabels.map((d) => {
+        const idx = data.indexOf(d);
+        const x = padding.left + (idx / (data.length - 1)) * chartW;
+        return (
+          <text key={d.date} x={x} y={height - 5} textAnchor="middle" fontSize={10} fill="#94a3b8">
+            {d.date.slice(5)}
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 
