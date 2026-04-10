@@ -130,7 +130,7 @@ function StocksPage({
       setLoading(true);
       fetch(`/data/cat-${cat.position ?? view.idx}.json`)
         .then((r) => r.json())
-        .then((d) => setCompanies(d.companies || []))
+        .then((d) => setCompanies(Array.isArray(d) ? d : d.companies || []))
         .finally(() => setLoading(false));
     } else if (view.type === 'interesting') {
       setLoading(true);
