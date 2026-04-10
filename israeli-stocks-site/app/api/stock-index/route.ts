@@ -81,10 +81,16 @@ async function fetchHistory(ticker: string, periodStart: Date): Promise<{ dates:
   }
 }
 
+const VALID_PERIODS = ['1w', '1m', 'ytd', '1y'] as const;
+type Period = typeof VALID_PERIODS[number];
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'ytd';
+    const rawPeriod = searchParams.get('period') || 'ytd';
+    const period: Period = VALID_PERIODS.includes(rawPeriod as Period)
+      ? (rawPeriod as Period)
+      : 'ytd';
     const periodStart = getPeriodStart(period);
 
     const tickerData = loadTickerData();

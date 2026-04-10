@@ -1,9 +1,30 @@
 import './globals.css';
 import type { Metadata } from 'next';
 
+const SITE_URL = 'https://israeli-stocks-site.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'סקירת מניות ישראל — בסיס היסטורי',
-  description: 'בסיס נתונים אינטראקטיבי מבוסס סקירות שלומי ארדן (2024–2026)',
+  title: 'סקירת מניות ישראל — בסיס היסטורי | שלומי ארדן',
+  description: 'בסיס נתונים אינטראקטיבי של סקירות המניות הישראליות של שלומי ארדן לשנים 2024–2026. כולל מדד SA20, ניתוחי חברות לפי קטגוריות, והשוואה למדדי ייחוס.',
+  metadataBase: new URL(SITE_URL),
+  openGraph: {
+    title: 'סקירת מניות ישראל — שלומי ארדן',
+    description: 'בסיס נתונים אינטראקטיבי של סקירות המניות הישראליות לשנים 2024–2026 כולל מדד SA20',
+    url: SITE_URL,
+    siteName: 'סקירת מניות ישראל',
+    locale: 'he_IL',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'סקירת מניות ישראל — שלומי ארדן',
+    description: 'בסיס נתונים אינטראקטיבי של סקירות המניות הישראליות לשנים 2024–2026',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

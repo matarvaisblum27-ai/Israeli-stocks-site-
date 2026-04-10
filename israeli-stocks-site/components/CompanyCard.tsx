@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Company } from '@/lib/supabase';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export default function CompanyCard({
   company,
@@ -72,7 +73,7 @@ export default function CompanyCard({
           )}
           <div
             className="review-body px-5 pb-5 pt-4 text-sm"
-            dangerouslySetInnerHTML={{ __html: reviews[year] || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(reviews[year] || '') }}
           />
         </div>
       )}

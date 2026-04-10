@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Category, Company, InterestingEntry } from '@/lib/supabase';
 import CompanyCard from './CompanyCard';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 const YEARS = ['2026', '2025', '2024'];
 
@@ -122,6 +123,7 @@ function StocksPage({
     companies: InterestingEntry[];
   }>({ preamble: '', companies: [] });
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (view.type === 'cat') {
@@ -149,68 +151,95 @@ function StocksPage({
     | Record<string, string>
     | null;
 
-  return (
-    <div className="flex flex-1">
-      <aside className="w-[280px] bg-panel border-l border-border p-3 sticky top-[44px] h-[calc(100vh-44px)] overflow-y-auto shrink-0">
-        <input
-          type="search"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="חיפוש חברה או טקסט..."
-          className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-slate-200 mb-3 placeholder:text-slate-500 focus:outline-none focus:border-accent"
-        />
-
-        <button
-          onClick={() => setView({ type: 'intro' })}
-          className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
-            view.type === 'intro'
-              ? 'bg-accent text-white'
-              : 'text-slate-300 hover:bg-slate-800'
-          }`}
-        >
-          📖 הקדמה
-        </button>
-
-        {interestingYears.length > 0 && (
-          <div className="mb-3">
-            <div className="text-[11px] text-muted px-1 mb-1">⭐ מדד מניות מעניינות</div>
-            {interestingYears.map((y) => (
-              <button
-                key={y}
-                onClick={() => setView({ type: 'interesting', year: y })}
-                className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm ${
-                  view.type === 'interesting' && view.year === y
-                    ? 'bg-accent text-white'
-                    : 'text-amber-300 hover:bg-slate-800'
-                }`}
-              >
-                ⭐ מעניינות {y}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="text-[11px] text-muted px-1 mb-1 border-t border-border pt-2">
-          קטגוריות
-        </div>
-        {filteredCategories
-          .filter(({ cat }) => !cat.name.includes('הקדמה'))
-          .map(({ cat, idx }) => (
+  /* Sidebar content — reused in both desktop aside and mobile drawer */
+  const sidebarContent = (
+    <>
+      <input
+        type="search"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="חיפוש חברה או טקסט..."
+        className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-slate-200 mb-3 placeholder:text-slate-500 focus:outline-none focus:border-accent"
+      />
+      <button
+        onClick={() => { setView({ type: 'intro' }); setSidebarOpen(false); }}
+        className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
+          view.type === 'intro' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
+        }`}
+      >
+        📖 הקדמה
+      </button>
+      {interestingYears.length > 0 && (
+        <div className="mb-3">
+          <div className="text-[11px] text-muted px-1 mb-1">⭐ מדד מניות מעניינות</div>
+          {interestingYears.map((y) => (
             <button
-              key={cat.id}
-              onClick={() => setView({ type: 'cat', idx })}
-              className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm flex justify-between items-center ${
-                view.type === 'cat' && view.idx === idx
-                  ? 'bg-accent text-white'
-                  : 'text-slate-300 hover:bg-slate-800'
+              key={y}
+              onClick={() => { setView({ type: 'interesting', year: y }); setSidebarOpen(false); }}
+              className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm ${
+                view.type === 'interesting' && view.year === y
+                  ? 'bg-accent text-white' : 'text-amber-300 hover:bg-slate-800'
               }`}
             >
-              <span className="truncate">{cat.name}</span>
+              ⭐ מעניינות {y}
             </button>
           ))}
+        </div>
+      )}
+      <div className="text-[11px] text-muted px-1 mb-1 border-t border-border pt-2">קטגוריות</div>
+      {filteredCategories
+        .filter(({ cat }) => !cat.name.includes('הקדמה'))
+        .map(({ cat, idx }) => (
+          <button
+            key={cat.id}
+            onClick={() => { setView({ type: 'cat', idx }); setSidebarOpen(false); }}
+            className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm flex justify-between items-center ${
+              view.type === 'cat' && view.idx === idx
+                ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <span className="truncate">{cat.name}</span>
+          </button>
+        ))}
+    </>
+  );
+
+  return (
+    <div className="flex flex-1 relative">
+      {/* ── Mobile sidebar button ── */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="lg:hidden fixed bottom-5 left-4 z-40 bg-accent text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg text-xl"
+        aria-label="פתח קטגוריות"
+      >
+        ☰
+      </button>
+
+      {/* ── Mobile drawer overlay ── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <div
+            className="absolute top-0 right-0 h-full w-[280px] bg-panel border-l border-border p-3 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <button onClick={() => setSidebarOpen(false)} className="text-muted text-lg">✕</button>
+              <span className="text-sm font-semibold text-slate-200">קטגוריות</span>
+            </div>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      {/* ── Desktop sidebar ── */}
+      <aside className="hidden lg:block w-[280px] bg-panel border-l border-border p-3 sticky top-[44px] h-[calc(100vh-44px)] overflow-y-auto shrink-0">
+        {sidebarContent}
       </aside>
 
-      <main className="flex-1 p-6 max-w-5xl mx-auto">
+      <main className="flex-1 p-4 lg:p-6 max-w-5xl mx-auto w-full min-w-0">
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
         {view.type === 'intro' && intro && (
@@ -332,7 +361,7 @@ function SA20Chart() {
           </p>
         </div>
         {/* Period selector */}
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {PERIODS.map((p) => (
             <button
               key={p.key}
@@ -733,7 +762,7 @@ function IntroView({ intro }: { intro: Record<string, string> }) {
       </div>
       <div
         className="review-body bg-panel border border-border rounded-xl p-6"
-        dangerouslySetInnerHTML={{ __html: intro[year] || '' }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(intro[year] || '') }}
       />
     </div>
   );
@@ -787,7 +816,7 @@ function CategoryView({
           <div
             className="review-body text-sm"
             dangerouslySetInnerHTML={{
-              __html: intro[introYear || introYears[0]] || '',
+              __html: sanitizeHtml(intro[introYear || introYears[0]] || ''),
             }}
           />
         </div>
@@ -850,7 +879,7 @@ function InterestingView({
       {preamble && (
         <div
           className="review-body bg-panel border border-border rounded-xl p-5 mb-6 text-sm"
-          dangerouslySetInnerHTML={{ __html: preamble }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(preamble) }}
         />
       )}
 
@@ -886,7 +915,7 @@ function InterestingCard({ entry }: { entry: InterestingEntry }) {
       {open && (
         <div
           className="review-body px-5 pb-5 border-t border-border pt-4"
-          dangerouslySetInnerHTML={{ __html: entry.html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(entry.html) }}
         />
       )}
     </div>
