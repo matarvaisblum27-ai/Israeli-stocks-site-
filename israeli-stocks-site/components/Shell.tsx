@@ -41,6 +41,7 @@ export default function Shell({
 }) {
   const [page, setPage] = useState<Page>('stocks');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const switchPage = useCallback((p: Page) => {
     setPage(p);
@@ -52,7 +53,7 @@ export default function Shell({
       {/* ── Top navbar ── */}
       <nav className="bg-panel border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          {/* Hamburger button */}
+          {/* Hamburger button — pages menu */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex flex-col justify-center items-center w-8 h-8 gap-[5px] rounded-md hover:bg-slate-800 transition-colors"
@@ -66,7 +67,13 @@ export default function Shell({
             {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
           </span>
         </div>
-        <div className="text-[11px] text-muted">שלומי ארדן</div>
+        <div className="flex items-center gap-3">
+          {/* Categories button — mobile only, stocks page only */}
+          {page === 'stocks' && (
+            <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
+          )}
+          <div className="text-[11px] text-muted">שלומי ארדן</div>
+        </div>
       </nav>
 
       {/* ── Dropdown menu ── */}
@@ -98,7 +105,12 @@ export default function Shell({
 
       {/* ── Page content ── */}
       {page === 'stocks' && (
-        <StocksPage categories={categories} interestingYears={interestingYears} />
+        <StocksPage
+          categories={categories}
+          interestingYears={interestingYears}
+          mobileSidebarOpen={mobileSidebarOpen}
+          onMobileSidebarClose={() => setMobileSidebarOpen(false)}
+        />
       )}
       {page === 'enrichment' && <EnrichmentPage />}
     </div>
@@ -111,9 +123,13 @@ export default function Shell({
 function StocksPage({
   categories,
   interestingYears,
+  mobileSidebarOpen,
+  onMobileSidebarClose,
 }: {
   categories: Category[];
   interestingYears: string[];
+  mobileSidebarOpen: boolean;
+  onMobileSidebarClose: () => void;
 }) {
   const [view, setView] = useState<View>({ type: 'intro' });
   const [filter, setFilter] = useState('');
@@ -123,7 +139,6 @@ function StocksPage({
     companies: InterestingEntry[];
   }>({ preamble: '', companies: [] });
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (view.type === 'cat') {
@@ -162,7 +177,7 @@ function StocksPage({
         className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-slate-200 mb-3 placeholder:text-slate-500 focus:outline-none focus:border-accent"
       />
       <button
-        onClick={() => { setView({ type: 'intro' }); setSidebarOpen(false); }}
+        onClick={() => { setView({ type: 'intro' }); onMobileSidebarClose(); }}
         className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
           view.type === 'intro' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
         }`}
@@ -175,7 +190,7 @@ function StocksPage({
           {interestingYears.map((y) => (
             <button
               key={y}
-              onClick={() => { setView({ type: 'interesting', year: y }); setSidebarOpen(false); }}
+              onClick={() => { setView({ type: 'interesting', year: y }); onMobileSidebarClose(); }}
               className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm ${
                 view.type === 'interesting' && view.year === y
                   ? 'bg-accent text-white' : 'text-amber-300 hover:bg-slate-800'
@@ -192,7 +207,7 @@ function StocksPage({
         .map(({ cat, idx }) => (
           <button
             key={cat.id}
-            onClick={() => { setView({ type: 'cat', idx }); setSidebarOpen(false); }}
+            onClick={() => { setView({ type: 'cat', idx }); onMobileSidebarClose(); }}
             className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm flex justify-between items-center ${
               view.type === 'cat' && view.idx === idx
                 ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
@@ -206,27 +221,18 @@ function StocksPage({
 
   return (
     <div className="flex flex-1 relative">
-      {/* ── Mobile sidebar button ── */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed bottom-5 left-4 z-40 bg-accent text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg text-xl"
-        aria-label="פתח קטגוריות"
-      >
-        ☰
-      </button>
-
       {/* ── Mobile drawer overlay ── */}
-      {sidebarOpen && (
+      {mobileSidebarOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/60 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={onMobileSidebarClose}
         >
           <div
             className="absolute top-0 right-0 h-full w-[280px] bg-panel border-l border-border p-3 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3">
-              <button onClick={() => setSidebarOpen(false)} className="text-muted text-lg">✕</button>
+              <button onClick={onMobileSidebarClose} className="text-muted text-xl px-1">✕</button>
               <span className="text-sm font-semibold text-slate-200">קטגוריות</span>
             </div>
             {sidebarContent}
@@ -919,5 +925,21 @@ function InterestingCard({ entry }: { entry: InterestingEntry }) {
         />
       )}
     </div>
+  );
+}
+
+/* ── Mobile categories button — shown only on small screens ── */
+function MobileCategoriesButton({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="lg:hidden flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-border text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+      aria-label="פתח קטגוריות"
+    >
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+      </svg>
+      קטגוריות
+    </button>
   );
 }
