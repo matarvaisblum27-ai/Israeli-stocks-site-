@@ -24,7 +24,7 @@ interface YahooChartResult {
 
 /* Benchmark indices */
 const BENCHMARKS = [
-  { name: 'ת"א 125', ticker: 'TA125.TA', color: '#60a5fa' },
+  { name: 'ת"א 125', ticker: '^TA125.TA', color: '#60a5fa' },
   { name: 'S&P 500', ticker: '^GSPC', color: '#f59e0b' },
   { name: 'NASDAQ', ticker: '^IXIC', color: '#a78bfa' },
   { name: 'MSCI World', ticker: 'URTH', color: '#f472b6' },
