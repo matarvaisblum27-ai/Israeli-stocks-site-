@@ -1,4 +1,42 @@
 /** @type {import('next').NextConfig} */
+
+const securityHeaders = [
+  // Prevent clickjacking — page cannot be embedded in an iframe
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  // Stop browsers from MIME-sniffing
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  // Enable XSS filter in older browsers
+  { key: 'X-XSS-Protection', value: '1; mode=block' },
+  // Only send the origin as referrer for cross-origin requests
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Disable invasive browser features we don't need
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  },
+  // Basic Content Security Policy
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      // Scripts: self + inline (needed for Next.js hydration)
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      // Styles: self + inline (Tailwind generates inline styles)
+      "style-src 'self' 'unsafe-inline'",
+      // Images: self + known WordPress/Google image CDNs + data URIs
+      "img-src 'self' data: https://i0.wp.com https://shlomiardan.com https://lh7-us.googleusercontent.com https://lh3.googleusercontent.com",
+      // Fetch/XHR: self + Yahoo Finance API (for stock data)
+      "connect-src 'self' https://query1.finance.yahoo.com https://query2.finance.yahoo.com",
+      "font-src 'self'",
+      "frame-src 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "upgrade-insecure-requests",
+    ].join('; '),
+  },
+];
+
 const nextConfig = {
   // output: 'export', // removed to enable API routes for stock data
   images: {
@@ -6,8 +44,26 @@ const nextConfig = {
       { protocol: 'https', hostname: 'i0.wp.com' },
       { protocol: 'https', hostname: 'shlomiardan.com' },
       { protocol: 'https', hostname: 'lh7-us.googleusercontent.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
     unoptimized: true,
   },
+  async headers() {
+    return [
+      {
+        // Apply security headers to all routes
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+      {
+        // Long cache for static JSON data files
+        source: '/data/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
+        ],
+      },
+    ];
+  },
 };
+
 export default nextConfig;

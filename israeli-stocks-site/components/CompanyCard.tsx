@@ -4,6 +4,26 @@ import { useState } from 'react';
 import type { Company } from '@/lib/supabase';
 import { sanitizeHtml } from '@/lib/sanitize';
 
+type Classification = 'מעניינת' | 'למעקב' | 'לא עוברת' | null;
+
+function getClassification(html: string): Classification {
+  if (!html) return null;
+  // Strip HTML tags and normalise whitespace
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  // Check last ~150 characters for classification keywords
+  const tail = text.slice(-150);
+  if (tail.includes('לא עוברת')) return 'לא עוברת';
+  if (tail.includes('למעקב')) return 'למעקב';
+  if (tail.includes('מעניינת')) return 'מעניינת';
+  return null;
+}
+
+const BADGE_STYLES: Record<NonNullable<Classification>, { bg: string; text: string; icon: string }> = {
+  'מעניינת':   { bg: 'bg-emerald-600/25 border border-emerald-500/40', text: 'text-emerald-300', icon: '⭐' },
+  'למעקב':    { bg: 'bg-amber-600/25 border border-amber-500/40',    text: 'text-amber-300',   icon: '👁' },
+  'לא עוברת': { bg: 'bg-red-600/25 border border-red-500/40',        text: 'text-red-400',     icon: '✗' },
+};
+
 export default function CompanyCard({
   company,
   years,
@@ -21,6 +41,9 @@ export default function CompanyCard({
     .replace(/\s+/g, ' ')
     .slice(0, 220);
 
+  const classification = getClassification(reviews['2026'] || '');
+  const badgeStyle = classification ? BADGE_STYLES[classification] : null;
+
   return (
     <div className="bg-panel border border-border rounded-xl overflow-hidden">
       <div
@@ -30,6 +53,12 @@ export default function CompanyCard({
         <div className="min-w-0 flex-1">
           <div className="font-bold text-slate-100 mb-1 flex gap-2 items-center flex-wrap">
             <span>{company.name}</span>
+            {badgeStyle && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 ${badgeStyle.bg} ${badgeStyle.text}`}>
+                <span>{badgeStyle.icon}</span>
+                <span>{classification}</span>
+              </span>
+            )}
             <div className="flex gap-1">
               {years.map((y) => (
                 <span

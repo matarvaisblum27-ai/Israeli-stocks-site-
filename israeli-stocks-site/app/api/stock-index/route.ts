@@ -10,6 +10,24 @@ function loadTickerData() {
 // Cache the result for 4 hours (Vercel edge cache)
 export const revalidate = 14400;
 
+// ── Simple in-memory rate limiter ──────────────────────────────────────────
+// Allows MAX_REQUESTS per IP per WINDOW_MS.  Resets automatically per window.
+const WINDOW_MS = 60_000;   // 1 minute window
+const MAX_REQUESTS = 20;    // max 20 calls / minute per IP (well above normal use)
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > MAX_REQUESTS;
+}
+
 interface YahooChartResult {
   chart: {
     result: Array<{
@@ -85,6 +103,18 @@ const VALID_PERIODS = ['1w', '1m', 'ytd', '1y'] as const;
 type Period = typeof VALID_PERIODS[number];
 
 export async function GET(request: Request) {
+  // Rate limiting
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait a moment and try again.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const rawPeriod = searchParams.get('period') || 'ytd';
