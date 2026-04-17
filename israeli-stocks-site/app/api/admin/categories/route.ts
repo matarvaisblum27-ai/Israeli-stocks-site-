@@ -87,6 +87,31 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const { fromIndex, toIndex } = await request.json();
+    // Read fresh data from GitHub (source of truth)
+    const categories = JSON.parse(await readDataFile('categories.json'));
+
+    if (fromIndex < 0 || fromIndex >= categories.length || toIndex < 0 || toIndex >= categories.length) {
+      return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
+    }
+
+    // Remove from old position, insert at new position
+    const [moved] = categories.splice(fromIndex, 1);
+    categories.splice(toIndex, 0, moved);
+
+    await writeMultipleFiles(
+      [{ path: CATEGORIES_PATH, content: JSON.stringify(categories, null, 2) }],
+      `admin: reorder category "${moved.name}" from position ${fromIndex} to ${toIndex}`
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const { index } = await request.json();

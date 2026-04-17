@@ -63,6 +63,7 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory' | 'interesting'>('categories');
   const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
 
   // For merge & search
   const [allCompanies, setAllCompanies] = useState<Array<{ name: string; catPos: number; catName: string; idx: number }>>([]);
@@ -588,6 +589,35 @@ export default function AdminDashboard() {
     finally { setSaving(false); }
   };
 
+  /* ─── Reorder category ─── */
+  const reorderCategory = async (fromIndex: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= categories.length) return;
+    // Skip הקדמה
+    if (categories[toIndex].name.includes('הקדמה') || categories[fromIndex].name.includes('הקדמה')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromIndex, toIndex }),
+      });
+      if (res.ok) {
+        showToast('✓ הסדר עודכן! האתר יתעדכן תוך דקה', 'success');
+        // Update local state
+        setCategories((prev) => {
+          const next = [...prev];
+          const [moved] = next.splice(fromIndex, 1);
+          next.splice(toIndex, 0, moved);
+          return next;
+        });
+        if (selectedCatIdx === fromIndex) setSelectedCatIdx(toIndex);
+        else if (selectedCatIdx === toIndex) setSelectedCatIdx(fromIndex);
+      } else showToast('שגיאה בשינוי סדר', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
   /* ─── Rebuild search index ─── */
   const rebuildSearchIndex = async () => {
     setSaving(true);
@@ -638,30 +668,77 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="border-t border-slate-700 mb-3" />
-
-      {/* Categories */}
-      <div className="text-xs text-slate-500 mb-2 px-2">קטגוריות</div>
-      {categories.map((cat, idx) => {
-        if (cat.name.includes('הקדמה')) return null;
+      {/* הקדמה */}
+      {categories.filter(c => c.name.includes('הקדמה')).map((cat) => {
+        const catIdx = categories.indexOf(cat);
         return (
           <button
             key={cat.id}
             onClick={() => {
-              setSelectedCatIdx(idx);
+              setSelectedCatIdx(catIdx);
               setSelectedCompanyIdx(null);
               setSelectedInterestingYear(null);
-              setMode('categories');
+              setMode('intro');
               setMobileSidebar(false);
             }}
-            className={`w-full text-right px-3 py-2 rounded-lg mb-1 text-sm transition-colors ${
-              selectedCatIdx === idx && mode !== 'interesting'
-                ? 'bg-blue-500/20 text-blue-400'
-                : 'text-slate-300 hover:bg-slate-800'
+            className={`w-full text-right px-3 py-2 rounded-lg mb-3 text-sm transition-colors ${
+              selectedCatIdx === catIdx && mode === 'intro'
+                ? 'bg-green-500/20 text-green-400'
+                : 'text-green-300/70 hover:bg-slate-800'
             }`}
           >
-            {cat.name}
+            📖 הקדמה כללית
           </button>
+        );
+      })}
+
+      <div className="border-t border-slate-700 mb-3" />
+
+      {/* Categories */}
+      <div className="flex items-center justify-between mb-2 px-2">
+        <span className="text-xs text-slate-500">קטגוריות</span>
+        <button
+          onClick={() => setReorderMode(!reorderMode)}
+          className={`text-xs ${reorderMode ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
+        >
+          {reorderMode ? '✓ סיום' : '↕ סדר'}
+        </button>
+      </div>
+      {categories.map((cat, idx) => {
+        if (cat.name.includes('הקדמה')) return null;
+        return (
+          <div key={cat.id} className="flex items-center gap-1 mb-1">
+            {reorderMode && (
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <button
+                  onClick={() => reorderCategory(idx, 'up')}
+                  className="text-[10px] text-slate-500 hover:text-slate-200 leading-none px-0.5"
+                  disabled={idx <= 1}
+                >▲</button>
+                <button
+                  onClick={() => reorderCategory(idx, 'down')}
+                  className="text-[10px] text-slate-500 hover:text-slate-200 leading-none px-0.5"
+                  disabled={idx >= categories.length - 1}
+                >▼</button>
+              </div>
+            )}
+            <button
+              onClick={() => {
+                setSelectedCatIdx(idx);
+                setSelectedCompanyIdx(null);
+                setSelectedInterestingYear(null);
+                setMode('categories');
+                setMobileSidebar(false);
+              }}
+              className={`flex-1 text-right px-3 py-2 rounded-lg text-sm transition-colors ${
+                selectedCatIdx === idx && mode !== 'interesting'
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              {cat.name}
+            </button>
+          </div>
         );
       })}
     </>
