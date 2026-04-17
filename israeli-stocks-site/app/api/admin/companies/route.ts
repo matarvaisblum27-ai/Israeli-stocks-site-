@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readFile, writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -77,8 +77,9 @@ export async function PUT(request: Request) {
     const { position, companyIndex, updates } = await request.json();
     // updates: { name?, reviews?: { year: html } }
 
+    // Read fresh data from GitHub (source of truth)
     const path = catPath(position);
-    const companies = JSON.parse(readLocal(`cat-${position}.json`));
+    const companies = JSON.parse(await readDataFile(`cat-${position}.json`));
 
     if (companyIndex < 0 || companyIndex >= companies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });
@@ -111,10 +112,11 @@ export async function POST(request: Request) {
     const { position, name, reviews } = await request.json();
     if (!name) return NextResponse.json({ error: 'Name required' }, { status: 400 });
 
+    // Read fresh data from GitHub (source of truth)
     const path = catPath(position);
     let companies = [];
     try {
-      companies = JSON.parse(readLocal(`cat-${position}.json`));
+      companies = JSON.parse(await readDataFile(`cat-${position}.json`));
     } catch {
       // New cat file
     }
@@ -134,8 +136,9 @@ export async function DELETE(request: Request) {
   try {
     const { position, companyIndex } = await request.json();
 
+    // Read fresh data from GitHub (source of truth)
     const path = catPath(position);
-    const companies = JSON.parse(readLocal(`cat-${position}.json`));
+    const companies = JSON.parse(await readDataFile(`cat-${position}.json`));
 
     if (companyIndex < 0 || companyIndex >= companies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -22,9 +22,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Same category' }, { status: 400 });
     }
 
-    const fromCompanies = JSON.parse(readLocal(`cat-${fromPosition}.json`));
-    const toCompanies = JSON.parse(readLocal(`cat-${toPosition}.json`));
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth) to avoid stale-read issues
+    const fromCompanies = JSON.parse(await readDataFile(`cat-${fromPosition}.json`));
+    const toCompanies = JSON.parse(await readDataFile(`cat-${toPosition}.json`));
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     if (companyIndex < 0 || companyIndex >= fromCompanies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
       { path: catGhPath(toPosition), content: JSON.stringify(toCompanies, null, 2) },
     ];
 
-    // Rebuild search index
+    // Rebuild search index — use fresh GitHub data for untouched cat files too
     const catFilesMap: Record<number, Array<{ name: string }>> = {};
     for (const cat of categories) {
       const existing = files.find((f) => f.path === catGhPath(cat.position));

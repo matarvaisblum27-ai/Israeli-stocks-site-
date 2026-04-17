@@ -830,11 +830,7 @@ function CategoryView({
   const filtered = useMemo(() => {
     if (!filter) return companies;
     const f = filter.toLowerCase();
-    return companies.filter(
-      (c) =>
-        c.name.toLowerCase().includes(f) ||
-        Object.values(c.reviews || {}).some((h) => h.toLowerCase().includes(f))
-    );
+    return companies.filter((c) => c.name.toLowerCase().includes(f));
   }, [companies, filter]);
 
   const intro = category.intro as Record<string, string> | null;
@@ -909,9 +905,7 @@ function InterestingView({
   const filtered = useMemo(() => {
     if (!filter) return companies;
     const f = filter.toLowerCase();
-    return companies.filter(
-      (c) => c.name.toLowerCase().includes(f) || c.html.toLowerCase().includes(f)
-    );
+    return companies.filter((c) => c.name.toLowerCase().includes(f));
   }, [companies, filter]);
 
   return (

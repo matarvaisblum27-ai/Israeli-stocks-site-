@@ -79,6 +79,13 @@ export async function writeFile(
   }
 }
 
+/** Read a JSON data file from the repo (for write operations that need fresh data) */
+export async function readDataFile(filename: string): Promise<string> {
+  const path = `israeli-stocks-site/public/data/${filename}`;
+  const { content } = await readFile(path);
+  return content;
+}
+
 /** Write multiple files in a single commit using the Git Trees API */
 export async function writeMultipleFiles(
   files: Array<{ path: string; content: string }>,

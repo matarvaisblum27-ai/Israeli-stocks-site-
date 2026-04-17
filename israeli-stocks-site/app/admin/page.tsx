@@ -295,6 +295,40 @@ export default function AdminDashboard() {
     }
   };
 
+  /* ─── Delete year from company ─── */
+  const deleteYear = async (companyIndex: number, year: string) => {
+    if (!selectedCat) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/companies', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          position: selectedCat.position,
+          companyIndex,
+          updates: { reviews: { [year]: null } },
+        }),
+      });
+      if (res.ok) {
+        showToast(`שנת ${year} נמחקה`, 'success');
+        setCompanies((prev) => {
+          const next = [...prev];
+          const reviews = { ...(next[companyIndex].reviews || {}) };
+          delete reviews[year];
+          next[companyIndex] = { ...next[companyIndex], reviews };
+          return next;
+        });
+      } else {
+        const data = await res.json();
+        showToast(data.error || 'שגיאה במחיקת שנה', 'error');
+      }
+    } catch {
+      showToast('שגיאת תקשורת', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   /* ─── Move company ─── */
   const moveCompany = async (companyIndex: number, toPosition: number) => {
     if (!selectedCat) return;
@@ -310,11 +344,13 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast('החברה הועברה', 'success');
+        showToast('החברה הועברה! האתר יתעדכן בעוד כ-60 שניות', 'success');
         setCompanies((prev) => prev.filter((_, i) => i !== companyIndex));
         setSelectedCompanyIdx(null);
+        setMode('categories');
       } else {
-        showToast('שגיאה בהעברה', 'error');
+        const data = await res.json();
+        showToast(data.error || 'שגיאה בהעברה', 'error');
       }
     } catch {
       showToast('שגיאת תקשורת', 'error');
@@ -532,6 +568,7 @@ export default function AdminDashboard() {
               category={selectedCat}
               categories={categories}
               onSaveReview={saveCompanyReview}
+              onDeleteYear={deleteYear}
               onSaveName={saveCompanyName}
               onDelete={deleteCompany}
               onMove={moveCompany}
@@ -623,6 +660,7 @@ function CompanyEditor({
   category,
   categories,
   onSaveReview,
+  onDeleteYear,
   onSaveName,
   onDelete,
   onMove,
@@ -633,6 +671,7 @@ function CompanyEditor({
   category: Category;
   categories: Category[];
   onSaveReview: (idx: number, year: string, html: string) => Promise<void>;
+  onDeleteYear: (idx: number, year: string) => Promise<void>;
   onSaveName: (idx: number, name: string) => Promise<void>;
   onDelete: (idx: number) => Promise<void>;
   onMove: (idx: number, toPosition: number) => Promise<void>;
@@ -732,18 +771,34 @@ function CompanyEditor({
       {/* Year tabs */}
       <div className="flex items-center gap-2 mb-4">
         {years.map((y) => (
-          <button
-            key={y}
-            onClick={() => setSelectedYear(y)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              selectedYear === y
-                ? 'bg-blue-500 text-white'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-            style={selectedYear !== y ? { background: '#1e293b' } : {}}
-          >
-            {y}
-          </button>
+          <div key={y} className="flex items-center gap-0.5">
+            <button
+              onClick={() => setSelectedYear(y)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                selectedYear === y
+                  ? 'bg-blue-500 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              style={selectedYear !== y ? { background: '#1e293b' } : {}}
+            >
+              {y}
+            </button>
+            {selectedYear === y && (
+              <button
+                onClick={() => {
+                  if (confirm(`למחוק את הסקירה לשנת ${y}?`)) {
+                    onDeleteYear(companyIndex, y);
+                    const remaining = years.filter(yr => yr !== y);
+                    setSelectedYear(remaining[remaining.length - 1] || '2026');
+                  }
+                }}
+                className="text-red-400 hover:text-red-300 text-xs px-1"
+                title={`מחק שנת ${y}`}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         ))}
         <div className="flex items-center gap-1 mr-4">
           <input

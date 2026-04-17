@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readFile, writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -21,8 +21,8 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const { index, updates } = await request.json();
-    // updates can include: name, intro (per year)
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth)
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     if (index < 0 || index >= categories.length) {
       return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
@@ -50,7 +50,8 @@ export async function POST(request: Request) {
     const { name } = await request.json();
     if (!name) return NextResponse.json({ error: 'Name required' }, { status: 400 });
 
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth)
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     // Find next available position
     const maxPos = Math.max(...categories.map((c: { position: number }) => c.position));
@@ -83,7 +84,8 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { index } = await request.json();
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth)
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     if (index < 0 || index >= categories.length) {
       return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
@@ -92,7 +94,7 @@ export async function DELETE(request: Request) {
     const cat = categories[index];
     // Check if category has companies
     try {
-      const companies = JSON.parse(readLocal(`cat-${cat.position}.json`));
+      const companies = JSON.parse(await readDataFile(`cat-${cat.position}.json`));
       if (companies.length > 0) {
         return NextResponse.json(
           { error: 'לא ניתן למחוק קטגוריה שיש בה חברות' },
