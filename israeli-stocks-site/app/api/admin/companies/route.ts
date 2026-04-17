@@ -61,12 +61,18 @@ export async function GET(request: Request) {
     const position = url.searchParams.get('position');
     if (!position) return NextResponse.json({ error: 'position required' }, { status: 400 });
 
-    const localPath = join(process.cwd(), 'public', 'data', `cat-${position}.json`);
-    if (existsSync(localPath)) {
-      const content = readFileSync(localPath, 'utf-8');
+    // Try GitHub first (always fresh), fall back to local
+    try {
+      const content = await readDataFile(`cat-${position}.json`);
       return NextResponse.json(JSON.parse(content));
+    } catch {
+      const localPath = join(process.cwd(), 'public', 'data', `cat-${position}.json`);
+      if (existsSync(localPath)) {
+        const content = readFileSync(localPath, 'utf-8');
+        return NextResponse.json(JSON.parse(content));
+      }
+      return NextResponse.json([]);
     }
-    return NextResponse.json([]);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }

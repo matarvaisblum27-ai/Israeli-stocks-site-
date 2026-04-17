@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -22,8 +22,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing newName or years' }, { status: 400 });
     }
 
-    const companies = JSON.parse(readLocal(`cat-${position}.json`));
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth)
+    const companies = JSON.parse(await readDataFile(`cat-${position}.json`));
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     if (companyIndex < 0 || companyIndex >= companies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });

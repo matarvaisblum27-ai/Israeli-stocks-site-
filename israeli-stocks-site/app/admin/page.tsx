@@ -25,9 +25,9 @@ function flattenHtml(val: string | string[] | undefined): string {
 /* ─── Toast ─── */
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 4000);
+    const t = setTimeout(onClose, type === 'success' ? 5000 : 6000);
     return () => clearTimeout(t);
-  }, [onClose]);
+  }, [onClose, type]);
   return (
     <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl text-sm font-medium shadow-lg border ${
       type === 'success' ? 'bg-green-500/15 border-green-500/30 text-green-400' : 'bg-red-500/15 border-red-500/30 text-red-400'
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast('נשמר בהצלחה! האתר יתעדכן בעוד כ-60 שניות', 'success');
+        showToast('✓ נשמר! האתר יתעדכן תוך דקה', 'success');
         // Update local state
         setCompanies((prev) => {
           const next = [...prev];
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast('השם עודכן', 'success');
+        showToast('✓ השם עודכן! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => {
           const next = [...prev];
           next[companyIndex] = { ...next[companyIndex], name: newName };
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ position: selectedCat.position, companyIndex }),
       });
       if (res.ok) {
-        showToast('החברה נמחקה', 'success');
+        showToast('✓ החברה נמחקה! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => prev.filter((_, i) => i !== companyIndex));
         setSelectedCompanyIdx(null);
       } else {
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ position: selectedCat.position, name, reviews: {} }),
       });
       if (res.ok) {
-        showToast('חברה נוספה', 'success');
+        showToast('✓ חברה נוספה! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => [...prev, { name, reviews: {} }]);
         setMode('categories');
       } else {
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ index: catIndex, updates: { intro: { [year]: html } } }),
       });
       if (res.ok) {
-        showToast('ההקדמה עודכנה', 'success');
+        showToast('✓ ההקדמה עודכנה! האתר יתעדכן תוך דקה', 'success');
         setCategories((prev) => {
           const next = [...prev];
           if (!next[catIndex].intro) next[catIndex].intro = {};
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ index: catIndex, updates: { name: newName } }),
       });
       if (res.ok) {
-        showToast('שם הקטגוריה עודכן', 'success');
+        showToast('✓ שם הקטגוריה עודכן! האתר יתעדכן תוך דקה', 'success');
         setCategories((prev) => {
           const next = [...prev];
           next[catIndex] = { ...next[catIndex], name: newName };
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({ name }),
       });
       if (res.ok) {
-        showToast('קטגוריה נוספה', 'success');
+        showToast('✓ קטגוריה נוספה! האתר יתעדכן תוך דקה', 'success');
         // Reload categories
         const catsRes = await fetch('/api/admin/categories');
         const cats = await catsRes.json();
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast(`שנת ${year} נמחקה`, 'success');
+        showToast(`✓ שנת ${year} נמחקה! האתר יתעדכן תוך דקה`, 'success');
         setCompanies((prev) => {
           const next = [...prev];
           const reviews = { ...(next[companyIndex].reviews || {}) };
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast('החברה הועברה! האתר יתעדכן בעוד כ-60 שניות', 'success');
+        showToast('✓ החברה הועברה! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => prev.filter((_, i) => i !== companyIndex));
         setSelectedCompanyIdx(null);
         setMode('categories');
@@ -378,7 +378,7 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        showToast('החברות אוחדו', 'success');
+        showToast('✓ החברות אוחדו! האתר יתעדכן תוך דקה', 'success');
         setMode('categories');
         // Reload if we're in the affected category
         if (selectedCat && (selectedCat.position === sourcePos || selectedCat.position === targetPos)) {

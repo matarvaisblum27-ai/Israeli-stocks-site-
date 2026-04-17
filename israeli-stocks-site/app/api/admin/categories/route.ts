@@ -11,8 +11,14 @@ function readLocal(filename: string) {
 
 export async function GET() {
   try {
-    const content = readLocal('categories.json');
-    return NextResponse.json(JSON.parse(content));
+    // Try GitHub first (always fresh), fall back to local
+    try {
+      const content = await readDataFile('categories.json');
+      return NextResponse.json(JSON.parse(content));
+    } catch {
+      const content = readLocal('categories.json');
+      return NextResponse.json(JSON.parse(content));
+    }
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }

@@ -1,23 +1,18 @@
 import { NextResponse } from 'next/server';
-import { writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 const SEARCH_INDEX_PATH = 'israeli-stocks-site/public/data/search-index.json';
 
-function readLocal(filename: string): string {
-  return readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf-8');
-}
-
 export async function POST() {
   try {
-    const categories = JSON.parse(readLocal('categories.json'));
+    // Read fresh data from GitHub (source of truth)
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     const catFiles: Record<number, Array<{ name: string; reviews?: Record<string, string> }>> = {};
     for (const cat of categories) {
       try {
-        catFiles[cat.position] = JSON.parse(readLocal(`cat-${cat.position}.json`));
+        catFiles[cat.position] = JSON.parse(await readDataFile(`cat-${cat.position}.json`));
       } catch {
         catFiles[cat.position] = [];
       }

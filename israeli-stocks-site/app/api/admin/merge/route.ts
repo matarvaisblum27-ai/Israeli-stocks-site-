@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles, readDataFile } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const CATEGORIES_PATH = 'israeli-stocks-site/public/data/categories.json';
 const SEARCH_INDEX_PATH = 'israeli-stocks-site/public/data/search-index.json';
 
 function catGhPath(position: number) {
@@ -20,11 +19,12 @@ export async function POST(request: Request) {
     const { sourcePosition, sourceIndex, targetPosition, targetIndex, keepTargetOnConflict } =
       await request.json();
 
-    const srcCompanies = JSON.parse(readLocal(`cat-${sourcePosition}.json`));
+    // Read fresh data from GitHub (source of truth)
+    const srcCompanies = JSON.parse(await readDataFile(`cat-${sourcePosition}.json`));
     const tgtCompanies = sourcePosition === targetPosition
       ? srcCompanies
-      : JSON.parse(readLocal(`cat-${targetPosition}.json`));
-    const categories = JSON.parse(readLocal('categories.json'));
+      : JSON.parse(await readDataFile(`cat-${targetPosition}.json`));
+    const categories = JSON.parse(await readDataFile('categories.json'));
 
     if (sourceIndex < 0 || sourceIndex >= srcCompanies.length) {
       return NextResponse.json({ error: 'Invalid source index' }, { status: 400 });
