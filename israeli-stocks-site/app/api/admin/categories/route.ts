@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { readFile, writeMultipleFiles } from '@/lib/github';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const CATEGORIES_PATH = 'israeli-stocks-site/public/data/categories.json';
 
+function readLocal(filename: string) {
+  return readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf-8');
+}
+
 export async function GET() {
   try {
-    const { content } = await readFile(CATEGORIES_PATH);
+    const content = readLocal('categories.json');
     return NextResponse.json(JSON.parse(content));
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
@@ -16,8 +22,7 @@ export async function PUT(request: Request) {
   try {
     const { index, updates } = await request.json();
     // updates can include: name, intro (per year)
-    const { content } = await readFile(CATEGORIES_PATH);
-    const categories = JSON.parse(content);
+    const categories = JSON.parse(readLocal('categories.json'));
 
     if (index < 0 || index >= categories.length) {
       return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
@@ -45,8 +50,7 @@ export async function POST(request: Request) {
     const { name } = await request.json();
     if (!name) return NextResponse.json({ error: 'Name required' }, { status: 400 });
 
-    const { content } = await readFile(CATEGORIES_PATH);
-    const categories = JSON.parse(content);
+    const categories = JSON.parse(readLocal('categories.json'));
 
     // Find next available position
     const maxPos = Math.max(...categories.map((c: { position: number }) => c.position));
@@ -79,8 +83,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { index } = await request.json();
-    const { content } = await readFile(CATEGORIES_PATH);
-    const categories = JSON.parse(content);
+    const categories = JSON.parse(readLocal('categories.json'));
 
     if (index < 0 || index >= categories.length) {
       return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
@@ -89,8 +92,7 @@ export async function DELETE(request: Request) {
     const cat = categories[index];
     // Check if category has companies
     try {
-      const catFile = await readFile(`israeli-stocks-site/public/data/cat-${cat.position}.json`);
-      const companies = JSON.parse(catFile.content);
+      const companies = JSON.parse(readLocal(`cat-${cat.position}.json`));
       if (companies.length > 0) {
         return NextResponse.json(
           { error: 'לא ניתן למחוק קטגוריה שיש בה חברות' },

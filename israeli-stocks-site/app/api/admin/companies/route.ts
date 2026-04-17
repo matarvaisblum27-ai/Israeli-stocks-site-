@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { readFile, writeMultipleFiles } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 const CATEGORIES_PATH = 'israeli-stocks-site/public/data/categories.json';
 const SEARCH_INDEX_PATH = 'israeli-stocks-site/public/data/search-index.json';
 
 function catPath(position: number) {
   return `israeli-stocks-site/public/data/cat-${position}.json`;
+}
+
+function readLocal(filename: string): string {
+  return readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf-8');
 }
 
 async function rebuildAndSave(
@@ -19,8 +25,7 @@ async function rebuildAndSave(
   if (existingCatsEntry) {
     categoriesContent = existingCatsEntry.content;
   } else {
-    const { content } = await readFile(CATEGORIES_PATH);
-    categoriesContent = content;
+    categoriesContent = readLocal('categories.json');
   }
   const categories = JSON.parse(categoriesContent);
 
@@ -33,8 +38,7 @@ async function rebuildAndSave(
       catFiles[cat.position] = JSON.parse(existing.content);
     } else {
       try {
-        const { content } = await readFile(p);
-        catFiles[cat.position] = JSON.parse(content);
+        catFiles[cat.position] = JSON.parse(readLocal(`cat-${cat.position}.json`));
       } catch {
         catFiles[cat.position] = [];
       }
@@ -57,8 +61,12 @@ export async function GET(request: Request) {
     const position = url.searchParams.get('position');
     if (!position) return NextResponse.json({ error: 'position required' }, { status: 400 });
 
-    const { content } = await readFile(catPath(parseInt(position)));
-    return NextResponse.json(JSON.parse(content));
+    const localPath = join(process.cwd(), 'public', 'data', `cat-${position}.json`);
+    if (existsSync(localPath)) {
+      const content = readFileSync(localPath, 'utf-8');
+      return NextResponse.json(JSON.parse(content));
+    }
+    return NextResponse.json([]);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
@@ -70,8 +78,7 @@ export async function PUT(request: Request) {
     // updates: { name?, reviews?: { year: html } }
 
     const path = catPath(position);
-    const { content } = await readFile(path);
-    const companies = JSON.parse(content);
+    const companies = JSON.parse(readLocal(`cat-${position}.json`));
 
     if (companyIndex < 0 || companyIndex >= companies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });
@@ -107,8 +114,7 @@ export async function POST(request: Request) {
     const path = catPath(position);
     let companies = [];
     try {
-      const { content } = await readFile(path);
-      companies = JSON.parse(content);
+      companies = JSON.parse(readLocal(`cat-${position}.json`));
     } catch {
       // New cat file
     }
@@ -129,8 +135,7 @@ export async function DELETE(request: Request) {
     const { position, companyIndex } = await request.json();
 
     const path = catPath(position);
-    const { content } = await readFile(path);
-    const companies = JSON.parse(content);
+    const companies = JSON.parse(readLocal(`cat-${position}.json`));
 
     if (companyIndex < 0 || companyIndex >= companies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });

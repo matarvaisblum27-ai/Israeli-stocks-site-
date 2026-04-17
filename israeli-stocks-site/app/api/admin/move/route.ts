@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
-import { readFile, writeMultipleFiles } from '@/lib/github';
+import { writeMultipleFiles } from '@/lib/github';
 import { buildSearchIndex } from '@/lib/search-index';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-const CATEGORIES_PATH = 'israeli-stocks-site/public/data/categories.json';
 const SEARCH_INDEX_PATH = 'israeli-stocks-site/public/data/search-index.json';
 
-function catPath(position: number) {
+function catGhPath(position: number) {
   return `israeli-stocks-site/public/data/cat-${position}.json`;
+}
+
+function readLocal(filename: string): string {
+  return readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf-8');
 }
 
 export async function POST(request: Request) {
@@ -17,17 +22,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Same category' }, { status: 400 });
     }
 
-    const fromPath = catPath(fromPosition);
-    const toPath = catPath(toPosition);
-
-    const [fromFile, toFile, catsFile] = await Promise.all([
-      readFile(fromPath),
-      readFile(toPath),
-      readFile(CATEGORIES_PATH),
-    ]);
-
-    const fromCompanies = JSON.parse(fromFile.content);
-    const toCompanies = JSON.parse(toFile.content);
+    const fromCompanies = JSON.parse(readLocal(`cat-${fromPosition}.json`));
+    const toCompanies = JSON.parse(readLocal(`cat-${toPosition}.json`));
+    const categories = JSON.parse(readLocal('categories.json'));
 
     if (companyIndex < 0 || companyIndex >= fromCompanies.length) {
       return NextResponse.json({ error: 'Invalid company index' }, { status: 400 });
@@ -37,25 +34,19 @@ export async function POST(request: Request) {
     toCompanies.push(company);
 
     const files: Array<{ path: string; content: string }> = [
-      { path: fromPath, content: JSON.stringify(fromCompanies, null, 2) },
-      { path: toPath, content: JSON.stringify(toCompanies, null, 2) },
+      { path: catGhPath(fromPosition), content: JSON.stringify(fromCompanies, null, 2) },
+      { path: catGhPath(toPosition), content: JSON.stringify(toCompanies, null, 2) },
     ];
 
     // Rebuild search index
-    const categories = JSON.parse(catsFile.content);
     const catFilesMap: Record<number, Array<{ name: string }>> = {};
     for (const cat of categories) {
-      const p = catPath(cat.position);
-      const existing = files.find((f) => f.path === p);
+      const existing = files.find((f) => f.path === catGhPath(cat.position));
       if (existing) {
         catFilesMap[cat.position] = JSON.parse(existing.content);
       } else {
-        try {
-          const { content } = await readFile(p);
-          catFilesMap[cat.position] = JSON.parse(content);
-        } catch {
-          catFilesMap[cat.position] = [];
-        }
+        try { catFilesMap[cat.position] = JSON.parse(readLocal(`cat-${cat.position}.json`)); }
+        catch { catFilesMap[cat.position] = []; }
       }
     }
     const searchIndex = buildSearchIndex(categories, catFilesMap);
