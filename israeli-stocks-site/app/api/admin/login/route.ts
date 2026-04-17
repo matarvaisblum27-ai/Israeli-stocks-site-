@@ -49,7 +49,6 @@ export async function POST(request: Request) {
       secure: cookie.secure,
       sameSite: cookie.sameSite,
       path: cookie.path,
-      maxAge: cookie.maxAge,
     });
 
     return response;

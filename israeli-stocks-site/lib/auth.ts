@@ -58,7 +58,7 @@ export function sessionCookieOptions(token: string) {
     secure: true,
     sameSite: 'strict' as const,
     path: '/',
-    maxAge: 60 * 60 * 24, // 24 hours
+    // No maxAge = session cookie — expires when browser closes
   };
 }
 
