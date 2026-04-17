@@ -86,6 +86,18 @@ export async function readDataFile(filename: string): Promise<string> {
   return content;
 }
 
+/** Trigger a Vercel deploy so the public site updates after admin changes */
+async function triggerVercelDeploy(): Promise<void> {
+  const hookUrl = process.env.VERCEL_DEPLOY_HOOK;
+  if (!hookUrl) return; // Skip if not configured
+  try {
+    await fetch(hookUrl, { method: 'POST' });
+  } catch {
+    // Non-critical — don't fail the admin operation if deploy trigger fails
+    console.error('Failed to trigger Vercel deploy');
+  }
+}
+
 /** Write multiple files in a single commit using the Git Trees API */
 export async function writeMultipleFiles(
   files: Array<{ path: string; content: string }>,
@@ -157,4 +169,7 @@ export async function writeMultipleFiles(
     body: JSON.stringify({ sha: newCommitData.sha }),
   });
   if (!updateRefRes.ok) throw new Error(`Failed to update ref: ${await updateRefRes.text()}`);
+
+  // Trigger Vercel deploy so the public site updates
+  await triggerVercelDeploy();
 }
