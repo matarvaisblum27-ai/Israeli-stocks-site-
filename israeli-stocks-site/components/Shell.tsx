@@ -143,9 +143,9 @@ function StocksPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Load search index once
+  // Load search index once (cache-bust to always get fresh data after deploy)
   useEffect(() => {
-    fetch('/data/search-index.json')
+    fetch(`/data/search-index.json?v=${Date.now()}`)
       .then((r) => r.json())
       .then(setSearchIndex)
       .catch(() => {});
@@ -172,13 +172,13 @@ function StocksPage({
       const cat = categories[view.idx];
       if (!cat) return;
       setLoading(true);
-      fetch(`/data/cat-${cat.position ?? view.idx}.json`)
+      fetch(`/data/cat-${cat.position ?? view.idx}.json?v=${Date.now()}`)
         .then((r) => r.json())
         .then((d) => setCompanies(Array.isArray(d) ? d : d.companies || []))
         .finally(() => setLoading(false));
     } else if (view.type === 'interesting') {
       setLoading(true);
-      fetch(`/data/interesting-${view.year}.json`)
+      fetch(`/data/interesting-${view.year}.json?v=${Date.now()}`)
         .then((r) => r.json())
         .then((d) => setInteresting(d))
         .finally(() => setLoading(false));
