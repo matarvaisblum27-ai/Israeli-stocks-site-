@@ -56,10 +56,10 @@ const nextConfig = {
         headers: securityHeaders,
       },
       {
-        // Long cache for static JSON data files
+        // Data files: no browser cache (always fresh), Vercel CDN handles caching per deploy
         source: '/data/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],
       },
     ];
