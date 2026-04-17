@@ -57,7 +57,7 @@ export function sessionCookieOptions(token: string) {
     httpOnly: true,
     secure: true,
     sameSite: 'strict' as const,
-    path: '/admin',
+    path: '/',
     maxAge: 60 * 60 * 24, // 24 hours
   };
 }
@@ -69,7 +69,7 @@ export function clearSessionCookie() {
     httpOnly: true,
     secure: true,
     sameSite: 'strict' as const,
-    path: '/admin',
+    path: '/',
     maxAge: 0,
   };
 }
