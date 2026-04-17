@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 /* ─── Types ─── */
 interface Category {
@@ -50,8 +50,11 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory'>('categories');
 
-  // For merge
+  // For merge & search
   const [allCompanies, setAllCompanies] = useState<Array<{ name: string; catPos: number; catName: string; idx: number }>>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -97,6 +100,52 @@ export default function AdminDashboard() {
     }
     setAllCompanies(all);
   }, [categories]);
+
+  /* ─── Auto-load all companies for search ─── */
+  useEffect(() => {
+    if (categories.length > 0 && allCompanies.length === 0) {
+      loadAllCompanies();
+    }
+  }, [categories, allCompanies.length, loadAllCompanies]);
+
+  /* ─── Close search dropdown on outside click ─── */
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const searchResults = searchQuery.length >= 2
+    ? allCompanies.filter((c) => c.name.includes(searchQuery)).slice(0, 12)
+    : [];
+
+  const navigateToCompany = (item: typeof allCompanies[0]) => {
+    // Find the category index
+    const catIdx = categories.findIndex((c) => c.position === item.catPos);
+    if (catIdx === -1) return;
+    setSelectedCatIdx(catIdx);
+    // We need to wait for companies to load, then select the company
+    // Set a flag so we know to select the company after load
+    setSearchQuery('');
+    setSearchFocused(false);
+    // Load companies for the category, then select the right one
+    setLoading(true);
+    fetch(`/api/admin/companies?position=${item.catPos}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) {
+          setCompanies(d);
+          setSelectedCompanyIdx(item.idx);
+          setMode('company');
+        }
+      })
+      .catch(() => showToast('שגיאה בטעינת חברות', 'error'))
+      .finally(() => setLoading(false));
+  };
 
   const selectedCat = selectedCatIdx !== null ? categories[selectedCatIdx] : null;
   const selectedCompany = selectedCompanyIdx !== null ? companies[selectedCompanyIdx] : null;
@@ -156,6 +205,7 @@ export default function AdminDashboard() {
           next[companyIndex] = { ...next[companyIndex], name: newName };
           return next;
         });
+        loadAllCompanies(); // refresh search index
       } else {
         showToast('שגיאה בעדכון שם', 'error');
       }
@@ -182,6 +232,7 @@ export default function AdminDashboard() {
         showToast('✓ החברה נמחקה! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => prev.filter((_, i) => i !== companyIndex));
         setSelectedCompanyIdx(null);
+        loadAllCompanies(); // refresh search index
       } else {
         showToast('שגיאה במחיקה', 'error');
       }
@@ -206,6 +257,7 @@ export default function AdminDashboard() {
         showToast('✓ חברה נוספה! האתר יתעדכן תוך דקה', 'success');
         setCompanies((prev) => [...prev, { name, reviews: {} }]);
         setMode('categories');
+        loadAllCompanies(); // refresh search index
       } else {
         showToast('שגיאה בהוספה', 'error');
       }
@@ -348,6 +400,7 @@ export default function AdminDashboard() {
         setCompanies((prev) => prev.filter((_, i) => i !== companyIndex));
         setSelectedCompanyIdx(null);
         setMode('categories');
+        loadAllCompanies(); // refresh search index
       } else {
         const data = await res.json();
         showToast(data.error || 'שגיאה בהעברה', 'error');
@@ -380,6 +433,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         showToast('✓ החברות אוחדו! האתר יתעדכן תוך דקה', 'success');
         setMode('categories');
+        loadAllCompanies(); // refresh search index
         // Reload if we're in the affected category
         if (selectedCat && (selectedCat.position === sourcePos || selectedCat.position === targetPos)) {
           const r = await fetch(`/api/admin/companies?position=${selectedCat.position}`);
@@ -420,6 +474,52 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Search bar */}
+      <div ref={searchRef} className="relative mb-4">
+        <div className="relative">
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            placeholder="🔍 חפש חברה..."
+            className="w-full px-4 py-3 rounded-xl text-sm text-slate-100 pr-10"
+            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+            dir="rtl"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); setSearchFocused(false); }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-sm"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {searchFocused && searchQuery.length >= 2 && (
+          <div
+            className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto"
+            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          >
+            {searchResults.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-slate-500">לא נמצאו תוצאות</div>
+            ) : (
+              searchResults.map((item, i) => (
+                <button
+                  key={`${item.catPos}-${item.idx}`}
+                  onClick={() => navigateToCompany(item)}
+                  className={`w-full text-right px-4 py-3 text-sm hover:bg-slate-800 transition-colors flex justify-between items-center ${
+                    i < searchResults.length - 1 ? 'border-b border-slate-800' : ''
+                  }`}
+                >
+                  <span className="text-slate-200 font-medium">{item.name}</span>
+                  <span className="text-xs text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded">{item.catName}</span>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Stats bar */}
       <div className="flex flex-wrap gap-3 mb-6">
