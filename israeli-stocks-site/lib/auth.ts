@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
 const COOKIE_NAME = 'admin_session';
-const EXPIRY = '24h';
+const EXPIRY = '2h';
 
 function getSecret() {
   const secret = process.env.ADMIN_JWT_SECRET;
@@ -58,7 +58,7 @@ export function sessionCookieOptions(token: string) {
     secure: true,
     sameSite: 'strict' as const,
     path: '/',
-    // No maxAge = session cookie — expires when browser closes
+    maxAge: 60 * 60 * 2, // 2 hours
   };
 }
 
