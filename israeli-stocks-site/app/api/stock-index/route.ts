@@ -48,19 +48,11 @@ const BENCHMARKS = [
   { name: 'MSCI World', ticker: 'URTH', color: '#f472b6' },
 ];
 
-function getPeriodStart(period: string): Date {
-  const now = new Date();
-  switch (period) {
-    case '1w':
-      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    case '1m':
-      return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    case '1y':
-      return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    case 'ytd':
-    default:
-      return new Date('2026-01-01');
-  }
+/* Index inception date: April 6, 2026 */
+const INDEX_START = '2026-04-06';
+
+function getPeriodStart(): Date {
+  return new Date(INDEX_START);
 }
 
 async function fetchHistory(ticker: string, periodStart: Date): Promise<{ dates: string[]; prices: number[] } | null> {
@@ -99,9 +91,6 @@ async function fetchHistory(ticker: string, periodStart: Date): Promise<{ dates:
   }
 }
 
-const VALID_PERIODS = ['1w', '1m', 'ytd', '1y'] as const;
-type Period = typeof VALID_PERIODS[number];
-
 export async function GET(request: Request) {
   // Rate limiting
   const ip =
@@ -116,12 +105,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { searchParams } = new URL(request.url);
-    const rawPeriod = searchParams.get('period') || 'ytd';
-    const period: Period = VALID_PERIODS.includes(rawPeriod as Period)
-      ? (rawPeriod as Period)
-      : 'ytd';
-    const periodStart = getPeriodStart(period);
+    const periodStart = getPeriodStart();
 
     const tickerData = loadTickerData();
     const stocks = tickerData.stocks;
@@ -171,6 +155,7 @@ export async function GET(request: Request) {
       return { name: sh.name, ticker: sh.ticker, map, basePrice: basePrice || 0 };
     });
 
+    // SA20: base-1000 index (like investing 1000₪ on inception date)
     const sa20Series: Array<{ date: string; value: number }> = [];
     for (const date of allDates) {
       let totalPctChange = 0;
@@ -184,7 +169,8 @@ export async function GET(request: Request) {
         }
       }
       if (count > 0) {
-        sa20Series.push({ date, value: Math.round((totalPctChange / count) * 100) / 100 });
+        const avgPct = totalPctChange / count;
+        sa20Series.push({ date, value: Math.round((1000 * (1 + avgPct / 100)) * 10) / 10 });
       }
     }
 
@@ -198,9 +184,10 @@ export async function GET(request: Request) {
       for (let i = 0; i < br.history.dates.length; i++) {
         const p = br.history.prices[i];
         if (p != null && !isNaN(p)) {
+          const pctChange = ((p - basePrice) / basePrice) * 100;
           data.push({
             date: br.history.dates[i],
-            value: Math.round(((p - basePrice) / basePrice) * 10000) / 100,
+            value: Math.round((1000 * (1 + pctChange / 100)) * 10) / 10,
           });
         }
       }
@@ -235,7 +222,7 @@ export async function GET(request: Request) {
       totalStocks: stocks.length,
       failedTickers,
       lastUpdated: new Date().toISOString(),
-      period,
+      startDate: INDEX_START,
     });
   } catch (error) {
     return NextResponse.json(

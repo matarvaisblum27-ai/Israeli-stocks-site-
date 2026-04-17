@@ -301,8 +301,8 @@ function StocksPage({
 
         {view.type === 'intro' && intro && (
           <>
-            <SA20Chart />
             <IntroView intro={intro} />
+            <SA20Chart />
           </>
         )}
 
@@ -354,18 +354,11 @@ interface SA20Response {
   error?: string;
 }
 
-const PERIODS = [
-  { key: '1w', label: 'שבוע' },
-  { key: '1m', label: 'חודש' },
-  { key: 'ytd', label: 'מתחילת השנה' },
-  { key: '1y', label: 'שנה' },
-] as const;
-
 const SA20_COLOR = '#34d399';
+const INDEX_START_DATE = '06.04.2026';
 
 function SA20Chart() {
   const [data, setData] = useState<SA20Response | null>(null);
-  const [period, setPeriod] = useState('ytd');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
@@ -374,7 +367,7 @@ function SA20Chart() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/stock-index?period=${period}`)
+    fetch('/api/stock-index')
       .then((r) => r.json())
       .then((d) => {
         if (d.error && !d.sa20) {
@@ -388,7 +381,7 @@ function SA20Chart() {
         setError(String(e));
         setLoading(false);
       });
-  }, [period]);
+  }, []);
 
   // Build all series for the chart
   const allSeries = useMemo(() => {
@@ -417,36 +410,30 @@ function SA20Chart() {
             {data ? `${data.stockCount} מניות מעניינות 2026 לעומת מדדי ייחוס` : 'טוען...'}
           </p>
         </div>
-        {/* Period selector */}
-        <div className="flex flex-wrap gap-1.5">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
-                period === p.key
-                  ? 'bg-accent border-accent text-white'
-                  : 'bg-bg border-border text-muted hover:text-slate-300'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="text-muted text-xs">
+          מתחילת המדד {INDEX_START_DATE} · בסיס 1,000 נקודות
         </div>
       </div>
 
       {/* SA20 big number */}
-      {data && data.sa20.length > 0 && (
-        <div className="px-4 pt-3 flex items-baseline gap-3">
-          <span className={`text-3xl font-bold ${data.sa20[data.sa20.length - 1].value >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {data.sa20[data.sa20.length - 1].value >= 0 ? '+' : ''}
-            {data.sa20[data.sa20.length - 1].value}%
-          </span>
-          <span className="text-muted text-xs">
-            SA20 · {PERIODS.find((p) => p.key === period)?.label}
-          </span>
-        </div>
-      )}
+      {data && data.sa20.length > 0 && (() => {
+        const lastVal = data.sa20[data.sa20.length - 1].value;
+        const points = Math.round(lastVal * 10) / 10;
+        const pctChange = Math.round((lastVal - 1000) / 10 * 100) / 100;
+        return (
+          <div className="px-4 pt-3 flex items-baseline gap-3">
+            <span className={`text-3xl font-bold ${pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {points.toLocaleString()}
+            </span>
+            <span className={`text-sm font-semibold ${pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {pctChange >= 0 ? '+' : ''}{pctChange}%
+            </span>
+            <span className="text-muted text-xs">
+              SA20 · מ-{INDEX_START_DATE}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Chart area */}
       <div className="p-4">
@@ -483,7 +470,7 @@ function SA20Chart() {
                 <span className="text-slate-300">{s.name}</span>
                 {lastVal != null && (
                   <span className={`font-semibold ${lastVal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {lastVal >= 0 ? '+' : ''}{lastVal}%
+                    {Math.round(lastVal * 10) / 10}
                   </span>
                 )}
               </button>
@@ -574,7 +561,7 @@ function MultiLineChart({
   };
   const valToY = (val: number) => padding.top + chartH - ((val - minVal) / range) * chartH;
 
-  const zeroY = valToY(0);
+  const baseLineY = valToY(1000);
 
   // Y-axis grid
   const ySteps = 6;
@@ -606,16 +593,16 @@ function MultiLineChart({
         <g key={l.val}>
           <line x1={padding.left} y1={l.y} x2={width - padding.right} y2={l.y} stroke="#1e293b" strokeWidth={1} />
           <text x={padding.left - 6} y={l.y + 4} textAnchor="end" fontSize={10} fill="#64748b">
-            {l.val}%
+            {l.val.toLocaleString()}
           </text>
         </g>
       ))}
 
-      {/* Zero line */}
-      {globalMin < 0 && globalMax > 0 && (
+      {/* Base 1000 line */}
+      {globalMin < 1000 && globalMax > 1000 && (
         <line
-          x1={padding.left} y1={zeroY}
-          x2={width - padding.right} y2={zeroY}
+          x1={padding.left} y1={baseLineY}
+          x2={width - padding.right} y2={baseLineY}
           stroke="#475569" strokeWidth={1} strokeDasharray="4 4"
         />
       )}
