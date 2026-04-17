@@ -226,6 +226,9 @@ function StocksPage({
             לא נמצאו תוצאות
           </div>
         )}
+        {searchIndex.length > 0 && (
+          <div className="text-[11px] text-muted text-center mt-1">{searchIndex.length} מניות לחיפוש</div>
+        )}
       </div>
       <button
         onClick={() => { setView({ type: 'intro' }); onMobileSidebarClose(); }}
