@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div dir="rtl" className="min-h-screen" style={{ background: '#0b1220', color: '#e2e8f0' }}>
       {/* Top bar */}
       <header
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 border-b"
+        className="sticky top-0 z-50 flex items-center justify-between px-3 md:px-6 py-3 border-b"
         style={{ background: '#0f172a', borderColor: '#1e293b' }}
       >
         <div className="flex items-center gap-3">
@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      <div className="p-6">{children}</div>
+      <div className="p-3 md:p-6">{children}</div>
     </div>
   );
 }

@@ -15,6 +15,19 @@ interface Company {
   reviews?: Record<string, string | string[]>;
 }
 
+interface InterestingCompany {
+  id: number;
+  year: string;
+  num: number;
+  name: string;
+  html: string;
+}
+
+interface InterestingData {
+  preamble: string;
+  companies: InterestingCompany[];
+}
+
 /* ─── Helpers ─── */
 function flattenHtml(val: string | string[] | undefined): string {
   if (!val) return '';
@@ -48,13 +61,19 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory'>('categories');
+  const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory' | 'interesting'>('categories');
+  const [mobileSidebar, setMobileSidebar] = useState(false);
 
   // For merge & search
   const [allCompanies, setAllCompanies] = useState<Array<{ name: string; catPos: number; catName: string; idx: number }>>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Interesting stocks
+  const [interestingYears, setInterestingYears] = useState<string[]>([]);
+  const [selectedInterestingYear, setSelectedInterestingYear] = useState<string | null>(null);
+  const [interestingData, setInterestingData] = useState<InterestingData>({ preamble: '', companies: [] });
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -82,6 +101,25 @@ export default function AdminDashboard() {
       .catch(() => showToast('שגיאה בטעינת חברות', 'error'))
       .finally(() => setLoading(false));
   }, [selectedCatIdx, categories, showToast]);
+
+  /* ─── Load interesting years ─── */
+  useEffect(() => {
+    fetch('/api/admin/interesting?type=years')
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d)) setInterestingYears(d); })
+      .catch(() => {});
+  }, []);
+
+  /* ─── Load interesting data when year selected ─── */
+  useEffect(() => {
+    if (!selectedInterestingYear) return;
+    setLoading(true);
+    fetch(`/api/admin/interesting?year=${selectedInterestingYear}`)
+      .then((r) => r.json())
+      .then((d) => setInterestingData(d))
+      .catch(() => showToast('שגיאה בטעינת נתוני מעניינות', 'error'))
+      .finally(() => setLoading(false));
+  }, [selectedInterestingYear, showToast]);
 
   /* ─── Load all companies (for merge) ─── */
   const loadAllCompanies = useCallback(async () => {
@@ -450,6 +488,106 @@ export default function AdminDashboard() {
     }
   };
 
+  /* ─── Interesting: save preamble ─── */
+  const saveInterestingPreamble = async (year: string, preamble: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/interesting', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, preamble }),
+      });
+      if (res.ok) {
+        showToast('✓ ההקדמה עודכנה! האתר יתעדכן תוך דקה', 'success');
+        setInterestingData((prev) => ({ ...prev, preamble }));
+      } else showToast('שגיאה בשמירה', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  /* ─── Interesting: save company ─── */
+  const saveInterestingCompany = async (year: string, idx: number, company: { name: string; html: string }) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/interesting', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, companyIndex: idx, company }),
+      });
+      if (res.ok) {
+        showToast('✓ נשמר! האתר יתעדכן תוך דקה', 'success');
+        setInterestingData((prev) => {
+          const next = { ...prev, companies: [...prev.companies] };
+          next.companies[idx] = { ...next.companies[idx], ...company };
+          return next;
+        });
+      } else showToast('שגיאה בשמירה', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  /* ─── Interesting: add company ─── */
+  const addInterestingCompany = async (year: string, name: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/interesting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, company: { name, html: '' } }),
+      });
+      if (res.ok) {
+        showToast('✓ חברה נוספה! האתר יתעדכן תוך דקה', 'success');
+        // Reload
+        const r = await fetch(`/api/admin/interesting?year=${year}`);
+        const d = await r.json();
+        setInterestingData(d);
+      } else showToast('שגיאה', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  /* ─── Interesting: delete company ─── */
+  const deleteInterestingCompany = async (year: string, idx: number) => {
+    const company = interestingData.companies[idx];
+    if (!confirm(`למחוק את "${company.name}" מהמעניינות?`)) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/interesting', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, companyIndex: idx }),
+      });
+      if (res.ok) {
+        showToast('✓ נמחק! האתר יתעדכן תוך דקה', 'success');
+        setInterestingData((prev) => ({
+          ...prev,
+          companies: prev.companies.filter((_, i) => i !== idx),
+        }));
+      } else showToast('שגיאה', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
+  /* ─── Interesting: create year ─── */
+  const createInterestingYear = async (year: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/interesting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year, createYear: true }),
+      });
+      if (res.ok) {
+        showToast('✓ שנה נוספה! האתר יתעדכן תוך דקה', 'success');
+        const r = await fetch('/api/admin/interesting?type=years');
+        const d = await r.json();
+        if (Array.isArray(d)) setInterestingYears(d);
+        setSelectedInterestingYear(year);
+      } else showToast('שגיאה', 'error');
+    } catch { showToast('שגיאת תקשורת', 'error'); }
+    finally { setSaving(false); }
+  };
+
   /* ─── Rebuild search index ─── */
   const rebuildSearchIndex = async () => {
     setSaving(true);
@@ -471,6 +609,64 @@ export default function AdminDashboard() {
   /* ════════════════════════════════════════════════════
      RENDER
      ════════════════════════════════════════════════════ */
+
+  const sidebarContent = (
+    <>
+      {/* ⭐ Interesting years */}
+      {interestingYears.length > 0 && (
+        <div className="mb-4">
+          <div className="text-xs text-amber-400 mb-2 px-2 font-medium">⭐ מדד מניות מעניינות</div>
+          {interestingYears.map((y) => (
+            <button
+              key={y}
+              onClick={() => {
+                setSelectedInterestingYear(y);
+                setSelectedCatIdx(null);
+                setSelectedCompanyIdx(null);
+                setMode('interesting');
+                setMobileSidebar(false);
+              }}
+              className={`w-full text-right px-3 py-2 rounded-lg mb-1 text-sm transition-colors ${
+                mode === 'interesting' && selectedInterestingYear === y
+                  ? 'bg-amber-500/20 text-amber-300'
+                  : 'text-amber-200/70 hover:bg-slate-800'
+              }`}
+            >
+              מעניינות {y}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-slate-700 mb-3" />
+
+      {/* Categories */}
+      <div className="text-xs text-slate-500 mb-2 px-2">קטגוריות</div>
+      {categories.map((cat, idx) => {
+        if (cat.name.includes('הקדמה')) return null;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => {
+              setSelectedCatIdx(idx);
+              setSelectedCompanyIdx(null);
+              setSelectedInterestingYear(null);
+              setMode('categories');
+              setMobileSidebar(false);
+            }}
+            className={`w-full text-right px-3 py-2 rounded-lg mb-1 text-sm transition-colors ${
+              selectedCatIdx === idx && mode !== 'interesting'
+                ? 'bg-blue-500/20 text-blue-400'
+                : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            {cat.name}
+          </button>
+        );
+      })}
+    </>
+  );
+
   return (
     <div className="max-w-7xl mx-auto">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -521,33 +717,41 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Stats bar */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <div className="px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+      {/* Stats bar — responsive */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {/* Mobile sidebar toggle */}
+        <button
+          onClick={() => setMobileSidebar(!mobileSidebar)}
+          className="md:hidden px-4 py-2 rounded-xl text-sm text-slate-300"
+          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+        >
+          ☰ קטגוריות
+        </button>
+        <div className="hidden md:flex px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
           <span className="text-slate-400">קטגוריות: </span>
           <span className="text-slate-100 font-semibold">{categories.filter(c => !c.name.includes('הקדמה')).length}</span>
         </div>
-        <div className="px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+        <div className="hidden md:flex px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
           <span className="text-slate-400">חברות בקטגוריה: </span>
           <span className="text-slate-100 font-semibold">{companies.length}</span>
         </div>
         <button
           onClick={rebuildSearchIndex}
           disabled={saving}
-          className="px-4 py-2 rounded-xl text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          className="hidden md:block px-4 py-2 rounded-xl text-sm text-blue-400 hover:text-blue-300 transition-colors"
           style={{ background: '#0f172a', border: '1px solid #1e293b' }}
         >
           בנה אינדקס חיפוש מחדש
         </button>
         <button
-          onClick={() => { setMode('merge'); loadAllCompanies(); }}
+          onClick={() => { setMode('merge'); loadAllCompanies(); setMobileSidebar(false); }}
           className="px-4 py-2 rounded-xl text-sm text-purple-400 hover:text-purple-300 transition-colors"
           style={{ background: '#0f172a', border: '1px solid #1e293b' }}
         >
           איחוד חברות
         </button>
         <button
-          onClick={() => setMode('addCategory')}
+          onClick={() => { setMode('addCategory'); setMobileSidebar(false); }}
           className="px-4 py-2 rounded-xl text-sm text-green-400 hover:text-green-300 transition-colors"
           style={{ background: '#0f172a', border: '1px solid #1e293b' }}
         >
@@ -563,31 +767,29 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="flex gap-6">
-        {/* ─── Sidebar: categories ─── */}
-        <div className="w-64 shrink-0">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+        {/* ─── Mobile sidebar overlay ─── */}
+        {mobileSidebar && (
+          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileSidebar(false)}>
+            <div className="absolute inset-0 bg-black/50" />
+            <div
+              className="absolute right-0 top-0 bottom-0 w-72 p-3 overflow-y-auto"
+              style={{ background: '#0f172a' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3 px-2">
+                <span className="text-sm text-slate-300 font-medium">ניווט</span>
+                <button onClick={() => setMobileSidebar(false)} className="text-slate-400 text-lg">✕</button>
+              </div>
+              {sidebarContent}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Desktop sidebar ─── */}
+        <div className="hidden md:block w-64 shrink-0">
           <div className="sticky top-16 rounded-xl p-3 max-h-[calc(100vh-120px)] overflow-y-auto" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
-            <div className="text-xs text-slate-500 mb-2 px-2">קטגוריות</div>
-            {categories.map((cat, idx) => {
-              if (cat.name.includes('הקדמה')) return null;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCatIdx(idx);
-                    setSelectedCompanyIdx(null);
-                    setMode('categories');
-                  }}
-                  className={`w-full text-right px-3 py-2 rounded-lg mb-1 text-sm transition-colors ${
-                    selectedCatIdx === idx
-                      ? 'bg-blue-500/20 text-blue-400'
-                      : 'text-slate-300 hover:bg-slate-800'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              );
-            })}
+            {sidebarContent}
           </div>
         </div>
 
@@ -607,6 +809,21 @@ export default function AdminDashboard() {
               onMerge={mergeCompanies}
               onCancel={() => setMode('categories')}
               loading={allCompanies.length === 0}
+            />
+          )}
+
+          {/* ── Interesting mode ── */}
+          {mode === 'interesting' && selectedInterestingYear && !loading && (
+            <InterestingEditor
+              year={selectedInterestingYear}
+              data={interestingData}
+              years={interestingYears}
+              onSavePreamble={saveInterestingPreamble}
+              onSaveCompany={saveInterestingCompany}
+              onAddCompany={addInterestingCompany}
+              onDeleteCompany={deleteInterestingCompany}
+              onCreateYear={createInterestingYear}
+              onBack={() => { setSelectedInterestingYear(null); setMode('categories'); }}
             />
           )}
 
@@ -1117,6 +1334,239 @@ function AddCategoryForm({ onSave, onCancel }: { onSave: (name: string) => void;
           ביטול
         </button>
       </div>
+    </div>
+  );
+}
+
+
+function InterestingEditor({
+  year,
+  data,
+  years,
+  onSavePreamble,
+  onSaveCompany,
+  onAddCompany,
+  onDeleteCompany,
+  onCreateYear,
+  onBack,
+}: {
+  year: string;
+  data: InterestingData;
+  years: string[];
+  onSavePreamble: (year: string, preamble: string) => Promise<void>;
+  onSaveCompany: (year: string, idx: number, company: { name: string; html: string }) => Promise<void>;
+  onAddCompany: (year: string, name: string) => Promise<void>;
+  onDeleteCompany: (year: string, idx: number) => Promise<void>;
+  onCreateYear: (year: string) => Promise<void>;
+  onBack: () => void;
+}) {
+  const [tab, setTab] = useState<'companies' | 'preamble'>('companies');
+  const [preambleHtml, setPreambleHtml] = useState(data.preamble);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [editHtml, setEditHtml] = useState('');
+  const [editName, setEditName] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [newYearInput, setNewYearInput] = useState('');
+
+  useEffect(() => { setPreambleHtml(data.preamble); }, [data.preamble]);
+  useEffect(() => {
+    if (selectedIdx !== null && data.companies[selectedIdx]) {
+      setEditHtml(data.companies[selectedIdx].html);
+      setEditName(data.companies[selectedIdx].name);
+    }
+  }, [selectedIdx, data.companies]);
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <button onClick={onBack} className="text-sm text-blue-400 hover:text-blue-300">← חזרה</button>
+        <h2 className="text-lg font-bold text-amber-300">⭐ מעניינות {year}</h2>
+        <span className="text-xs text-slate-500">{data.companies.length} חברות</span>
+      </div>
+
+      {/* Year tabs + add year */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {years.map((y) => (
+          <button
+            key={y}
+            onClick={() => { /* parent handles year switch via sidebar */ }}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+              year === y ? 'bg-amber-500 text-white' : 'text-slate-400'
+            }`}
+            style={year !== y ? { background: '#1e293b' } : {}}
+          >
+            {y}
+          </button>
+        ))}
+        <div className="flex items-center gap-1">
+          <input
+            value={newYearInput}
+            onChange={(e) => setNewYearInput(e.target.value)}
+            placeholder="שנה חדשה"
+            className="w-24 px-2 py-1 rounded text-xs text-slate-100"
+            style={{ background: '#1e293b', border: '1px solid #334155' }}
+          />
+          <button
+            onClick={() => { if (newYearInput && !years.includes(newYearInput)) { onCreateYear(newYearInput); setNewYearInput(''); } }}
+            className="text-xs text-green-400 hover:text-green-300"
+          >
+            + הוסף שנה
+          </button>
+        </div>
+      </div>
+
+      {/* Tab switch: companies / preamble */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => { setTab('companies'); setSelectedIdx(null); }}
+          className={`px-4 py-2 rounded-lg text-sm ${tab === 'companies' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
+          style={tab !== 'companies' ? { background: '#1e293b' } : {}}
+        >
+          חברות ({data.companies.length})
+        </button>
+        <button
+          onClick={() => setTab('preamble')}
+          className={`px-4 py-2 rounded-lg text-sm ${tab === 'preamble' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
+          style={tab !== 'preamble' ? { background: '#1e293b' } : {}}
+        >
+          הקדמה
+        </button>
+      </div>
+
+      {/* ── Preamble tab ── */}
+      {tab === 'preamble' && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-slate-500">HTML של ההקדמה</span>
+            <button onClick={() => setShowPreview(!showPreview)} className="text-xs text-slate-400 hover:text-slate-200">
+              {showPreview ? 'הסתר תצוגה מקדימה' : 'תצוגה מקדימה'}
+            </button>
+          </div>
+          <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
+            <textarea
+              value={preambleHtml}
+              onChange={(e) => setPreambleHtml(e.target.value)}
+              className="w-full h-[50vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
+              style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+              dir="rtl"
+            />
+            {showPreview && (
+              <div
+                className="p-4 rounded-xl overflow-auto h-[50vh] review-body text-sm"
+                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+                dangerouslySetInnerHTML={{ __html: preambleHtml }}
+              />
+            )}
+          </div>
+          <button
+            onClick={() => onSavePreamble(year, preambleHtml)}
+            className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
+          >
+            שמור הקדמה
+          </button>
+        </div>
+      )}
+
+      {/* ── Companies tab ── */}
+      {tab === 'companies' && selectedIdx === null && (
+        <div>
+          {/* Add company */}
+          <div className="flex gap-2 mb-4">
+            <input
+              value={newCompanyName}
+              onChange={(e) => setNewCompanyName(e.target.value)}
+              placeholder="שם חברה חדשה..."
+              className="flex-1 px-3 py-2 rounded-lg text-sm text-slate-100"
+              style={{ background: '#1e293b', border: '1px solid #334155' }}
+            />
+            <button
+              onClick={() => { if (newCompanyName) { onAddCompany(year, newCompanyName); setNewCompanyName(''); } }}
+              disabled={!newCompanyName}
+              className="px-4 py-2 rounded-lg text-sm text-white bg-green-500 hover:bg-green-600 disabled:opacity-50"
+            >
+              + הוסף
+            </button>
+          </div>
+
+          {/* Company list */}
+          <div className="space-y-1">
+            {data.companies.map((c, idx) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm"
+                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+              >
+                <button
+                  onClick={() => setSelectedIdx(idx)}
+                  className="text-slate-200 hover:text-amber-300 text-right flex-1"
+                >
+                  <span className="text-xs text-slate-500 ml-2">#{c.num}</span>
+                  {c.name}
+                </button>
+                <button
+                  onClick={() => onDeleteCompany(year, idx)}
+                  className="text-red-400 hover:text-red-300 text-xs mr-3"
+                >
+                  מחק
+                </button>
+              </div>
+            ))}
+            {data.companies.length === 0 && (
+              <div className="text-slate-500 text-sm text-center py-8">אין חברות עדיין</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Single company edit ── */}
+      {tab === 'companies' && selectedIdx !== null && data.companies[selectedIdx] && (
+        <div>
+          <button onClick={() => setSelectedIdx(null)} className="text-sm text-blue-400 hover:text-blue-300 mb-4">
+            ← חזרה לרשימה
+          </button>
+          <div className="mb-4 p-4 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-slate-500">שם:</span>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="flex-1 px-3 py-1.5 rounded-lg text-sm text-slate-100"
+                style={{ background: '#1e293b', border: '1px solid #334155' }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-slate-500">HTML</span>
+            <button onClick={() => setShowPreview(!showPreview)} className="text-xs text-slate-400 hover:text-slate-200">
+              {showPreview ? 'הסתר' : 'תצוגה מקדימה'}
+            </button>
+          </div>
+          <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
+            <textarea
+              value={editHtml}
+              onChange={(e) => setEditHtml(e.target.value)}
+              className="w-full h-[50vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
+              style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+              dir="rtl"
+            />
+            {showPreview && (
+              <div
+                className="p-4 rounded-xl overflow-auto h-[50vh] review-body text-sm"
+                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+                dangerouslySetInnerHTML={{ __html: editHtml }}
+              />
+            )}
+          </div>
+          <button
+            onClick={() => onSaveCompany(year, selectedIdx, { name: editName, html: editHtml })}
+            className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
+          >
+            שמור
+          </button>
+        </div>
+      )}
     </div>
   );
 }
