@@ -231,7 +231,7 @@ function StocksPage({
         )}
       </div>
       <button
-        onClick={() => { setView({ type: 'intro' }); onMobileSidebarClose(); }}
+        onClick={() => { setView({ type: 'intro' }); setFilter(''); onMobileSidebarClose(); }}
         className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
           view.type === 'intro' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
         }`}
@@ -244,7 +244,7 @@ function StocksPage({
           {interestingYears.map((y) => (
             <button
               key={y}
-              onClick={() => { setView({ type: 'interesting', year: y }); onMobileSidebarClose(); }}
+              onClick={() => { setView({ type: 'interesting', year: y }); setFilter(''); onMobileSidebarClose(); }}
               className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm ${
                 view.type === 'interesting' && view.year === y
                   ? 'bg-accent text-white' : 'text-amber-300 hover:bg-slate-800'
@@ -261,7 +261,7 @@ function StocksPage({
         .map(({ cat, idx }) => (
           <button
             key={cat.id}
-            onClick={() => { setView({ type: 'cat', idx }); onMobileSidebarClose(); }}
+            onClick={() => { setView({ type: 'cat', idx }); setFilter(''); onMobileSidebarClose(); }}
             className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm flex justify-between items-center ${
               view.type === 'cat' && view.idx === idx
                 ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
@@ -314,6 +314,7 @@ function StocksPage({
             category={categories[view.idx]}
             companies={companies}
             filter={filter}
+            onClearFilter={() => setFilter('')}
           />
         )}
 
@@ -819,10 +820,12 @@ function CategoryView({
   category,
   companies,
   filter,
+  onClearFilter,
 }: {
   category: Category;
   companies: Company[];
   filter: string;
+  onClearFilter: () => void;
 }) {
   const filtered = useMemo(() => {
     if (!filter) return companies;
@@ -841,7 +844,17 @@ function CategoryView({
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-100 mb-2">{category.name}</h1>
-      <div className="text-muted text-sm mb-4">{filtered.length} חברות</div>
+      <div className="text-muted text-sm mb-4 flex items-center gap-2">
+        <span>{filtered.length} חברות</span>
+        {filter && (
+          <button
+            onClick={onClearFilter}
+            className="text-accent text-xs hover:underline"
+          >
+            הצג הכל ({companies.length})
+          </button>
+        )}
+      </div>
 
       {intro && introYears.length > 0 && (
         <div className="mb-6 bg-panel border border-border rounded-xl p-5">
