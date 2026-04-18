@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
+
+const RichEditor = dynamic(() => import('@/components/RichEditor'), { ssr: false, loading: () => <div className="text-slate-500 text-sm p-4">טוען עורך...</div> });
 
 /* ─── Types ─── */
 interface Category {
@@ -1082,7 +1085,7 @@ function CompanyEditor({
   const [name, setName] = useState(company.name);
   const [newYear, setNewYear] = useState('');
   const [showMove, setShowMove] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
 
   useEffect(() => {
     const reviews = company.reviews || {};
@@ -1221,37 +1224,36 @@ function CompanyEditor({
         </div>
       </div>
 
-      {/* HTML Editor */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-500">HTML</span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className="text-xs text-slate-400 hover:text-slate-200"
-              >
-                {showPreview ? 'הסתר תצוגה מקדימה' : 'תצוגה מקדימה'}
-              </button>
-            </div>
-          </div>
-          <textarea
-            value={html}
-            onChange={(e) => setHtml(e.target.value)}
-            className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono leading-relaxed resize-none text-slate-200"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-            dir="rtl"
-          />
+      {/* Editor */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEditorMode('rich')}
+            className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}
+          >
+            עורך ויזואלי
+          </button>
+          <button
+            onClick={() => setEditorMode('html')}
+            className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}
+          >
+            HTML
+          </button>
         </div>
-
-        {showPreview && (
-          <div
-            className="p-4 rounded-xl overflow-auto h-[60vh] review-body text-sm"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-        )}
+        {editorMode === 'rich' && <span className="text-[10px] text-slate-600">גרור תמונה לכאן או לחץ 🖼️</span>}
       </div>
+
+      {editorMode === 'rich' ? (
+        <RichEditor content={html} onChange={setHtml} />
+      ) : (
+        <textarea
+          value={html}
+          onChange={(e) => setHtml(e.target.value)}
+          className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono leading-relaxed resize-none text-slate-200"
+          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          dir="rtl"
+        />
+      )}
 
       <div className="mt-4 flex gap-2">
         <button
@@ -1291,7 +1293,7 @@ function IntroEditor({
   const years = Object.keys(intro).sort();
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] || '2026');
   const [html, setHtml] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
 
   useEffect(() => {
     setHtml(flattenHtml(intro[selectedYear]));
@@ -1321,33 +1323,22 @@ function IntroEditor({
         ))}
       </div>
 
-      <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
-        <div>
-          <div className="flex justify-between mb-2">
-            <span className="text-xs text-slate-500">HTML</span>
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="text-xs text-slate-400 hover:text-slate-200"
-            >
-              {showPreview ? 'הסתר' : 'תצוגה מקדימה'}
-            </button>
-          </div>
-          <textarea
-            value={html}
-            onChange={(e) => setHtml(e.target.value)}
-            className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-            dir="rtl"
-          />
-        </div>
-        {showPreview && (
-          <div
-            className="p-4 rounded-xl overflow-auto h-[60vh] review-body text-sm"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-        )}
+      <div className="flex gap-2 mb-2">
+        <button onClick={() => setEditorMode('rich')} className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}>עורך ויזואלי</button>
+        <button onClick={() => setEditorMode('html')} className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}>HTML</button>
       </div>
+
+      {editorMode === 'rich' ? (
+        <RichEditor content={html} onChange={setHtml} />
+      ) : (
+        <textarea
+          value={html}
+          onChange={(e) => setHtml(e.target.value)}
+          className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
+          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          dir="rtl"
+        />
+      )}
 
       <button
         onClick={() => onSave(catIndex, selectedYear, html)}
@@ -1446,7 +1437,7 @@ function InterestingEditor({
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [editHtml, setEditHtml] = useState('');
   const [editName, setEditName] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
   const [newCompanyName, setNewCompanyName] = useState('');
   const [newYearInput, setNewYearInput] = useState('');
 
@@ -1518,13 +1509,13 @@ function InterestingEditor({
       {/* ── Preamble tab ── */}
       {tab === 'preamble' && (
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-500">HTML של ההקדמה</span>
-            <button onClick={() => setShowPreview(!showPreview)} className="text-xs text-slate-400 hover:text-slate-200">
-              {showPreview ? 'הסתר תצוגה מקדימה' : 'תצוגה מקדימה'}
-            </button>
+          <div className="flex gap-2 mb-2">
+            <button onClick={() => setEditorMode('rich')} className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500'}`}>עורך ויזואלי</button>
+            <button onClick={() => setEditorMode('html')} className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500'}`}>HTML</button>
           </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
+          {editorMode === 'rich' ? (
+            <RichEditor content={preambleHtml} onChange={setPreambleHtml} />
+          ) : (
             <textarea
               value={preambleHtml}
               onChange={(e) => setPreambleHtml(e.target.value)}
@@ -1532,14 +1523,7 @@ function InterestingEditor({
               style={{ background: '#0f172a', border: '1px solid #1e293b' }}
               dir="rtl"
             />
-            {showPreview && (
-              <div
-                className="p-4 rounded-xl overflow-auto h-[50vh] review-body text-sm"
-                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-                dangerouslySetInnerHTML={{ __html: preambleHtml }}
-              />
-            )}
-          </div>
+          )}
           <button
             onClick={() => onSavePreamble(year, preambleHtml)}
             className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
@@ -1618,13 +1602,13 @@ function InterestingEditor({
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-500">HTML</span>
-            <button onClick={() => setShowPreview(!showPreview)} className="text-xs text-slate-400 hover:text-slate-200">
-              {showPreview ? 'הסתר' : 'תצוגה מקדימה'}
-            </button>
+          <div className="flex gap-2 mb-2">
+            <button onClick={() => setEditorMode('rich')} className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500'}`}>עורך ויזואלי</button>
+            <button onClick={() => setEditorMode('html')} className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500'}`}>HTML</button>
           </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}>
+          {editorMode === 'rich' ? (
+            <RichEditor content={editHtml} onChange={setEditHtml} />
+          ) : (
             <textarea
               value={editHtml}
               onChange={(e) => setEditHtml(e.target.value)}
@@ -1632,14 +1616,7 @@ function InterestingEditor({
               style={{ background: '#0f172a', border: '1px solid #1e293b' }}
               dir="rtl"
             />
-            {showPreview && (
-              <div
-                className="p-4 rounded-xl overflow-auto h-[50vh] review-body text-sm"
-                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
-                dangerouslySetInnerHTML={{ __html: editHtml }}
-              />
-            )}
-          </div>
+          )}
           <button
             onClick={() => onSaveCompany(year, selectedIdx, { name: editName, html: editHtml })}
             className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
