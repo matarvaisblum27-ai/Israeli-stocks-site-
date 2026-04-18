@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 
 const SITE_URL = 'https://israeli-stocks-site.vercel.app';
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" dir="rtl">
       <body>
         {children}
+        <Analytics />
         <footer className="border-t border-[#1e293b] bg-[#0b1220] py-8 px-4 text-center">
           <div className="mb-2 text-sm font-semibold text-slate-300">
             אתר ניתוח מניות ישראליות-שלומי ארדן
