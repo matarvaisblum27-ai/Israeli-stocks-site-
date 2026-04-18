@@ -366,6 +366,7 @@ function SA20Chart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
+  const [selectedSeries, setSelectedSeries] = useState<string>('SA20');
   const [showTable, setShowTable] = useState(false);
 
   useEffect(() => {
@@ -419,21 +420,23 @@ function SA20Chart() {
         </div>
       </div>
 
-      {/* SA20 big number */}
-      {data && data.sa20.length > 0 && (() => {
-        const lastVal = data.sa20[data.sa20.length - 1].value;
+      {/* Selected series big number */}
+      {data && allSeries.length > 0 && (() => {
+        const sel = allSeries.find((s) => s.name === selectedSeries) || allSeries[0];
+        if (!sel || sel.data.length === 0) return null;
+        const lastVal = sel.data[sel.data.length - 1].value;
         const points = Math.round(lastVal * 10) / 10;
         const pctChange = Math.round((lastVal - 1000) / 10 * 100) / 100;
         return (
           <div className="px-4 pt-3 flex items-baseline gap-3">
-            <span className={`text-3xl font-bold ${pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span className={`text-3xl font-bold transition-colors`} style={{ color: sel.color }}>
               {points.toLocaleString()}
             </span>
             <span className={`text-sm font-semibold ${pctChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {pctChange >= 0 ? '+' : ''}{pctChange}%
             </span>
             <span className="text-muted text-xs">
-              SA20 · מ-{INDEX_START_DATE}
+              {sel.name} · מ-{INDEX_START_DATE}
             </span>
           </div>
         );
@@ -461,19 +464,22 @@ function SA20Chart() {
         <div className="px-4 pb-3 flex flex-wrap gap-x-4 gap-y-1.5 justify-center">
           {allSeries.map((s) => {
             const lastVal = s.data[s.data.length - 1]?.value;
+            const isSelected = selectedSeries === s.name;
+            const isFaded = hoveredSeries && hoveredSeries !== s.name;
             return (
               <button
                 key={s.name}
-                className={`flex items-center gap-1.5 text-xs transition-opacity ${
-                  hoveredSeries && hoveredSeries !== s.name ? 'opacity-30' : 'opacity-100'
-                }`}
+                className={`flex items-center gap-1.5 text-xs transition-all rounded-md px-2 py-1 ${
+                  isSelected ? 'bg-slate-800 ring-1 ring-slate-600' : ''
+                } ${isFaded ? 'opacity-30' : 'opacity-100'}`}
+                onClick={() => setSelectedSeries(s.name)}
                 onMouseEnter={() => setHoveredSeries(s.name)}
                 onMouseLeave={() => setHoveredSeries(null)}
               >
                 <span className="w-3 h-[3px] rounded-full inline-block" style={{ background: s.color }} />
                 <span className="text-slate-300">{s.name}</span>
                 {lastVal != null && (
-                  <span className={`font-semibold ${lastVal >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className={`font-semibold ${lastVal >= 1000 ? 'text-emerald-400' : 'text-red-400'}`}>
                     {Math.round(lastVal * 10) / 10}
                   </span>
                 )}
