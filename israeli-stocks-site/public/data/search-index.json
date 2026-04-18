@@ -2,7 +2,7 @@
   {
     "name": "א.א.א.מ.א.",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
@@ -20,7 +20,7 @@
   {
     "name": "אבגול",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
@@ -32,91 +32,91 @@
   {
     "name": "אבוג’ן",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אברא",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "אברות",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "אדגר השקעות ופיתוח",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "או.אר.טי טכנולוגיות",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "או.פי.סי אנרגיה",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "אוברסיז קומרס",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "אוגווינד",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "אודיוקודס",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "אוטומקס מוטורס",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "אוטונומוס גארד",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אולטרייד מחזור",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אולמד סולושנס בע\"מ",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "אולמד סולושנס בע”מ",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אונדס החזקות",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
@@ -128,67 +128,67 @@
   {
     "name": "אופל בלאנס",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "אופקו",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אורביט",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אורבניקה",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "אורד",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אורה סמארט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אורון קבוצה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אוריון נכסים מסחריים",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אוריין ש.מ",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "אורמד",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אורמת",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
@@ -200,43 +200,43 @@
   {
     "name": "אטראו שוקי הון",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "אי.בי.אי בית השקעות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "אי.בי.אי ניהול וחיתום",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "אי.טי.ג’י.איי",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "אידומו",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "איי אי מערכות שיחה",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "איי ארגנטו",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
@@ -248,43 +248,43 @@
   {
     "name": "איי.די.איי ביטוח",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "איי.סי.אל",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "איידנטי הלת’קר",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "איילון חברה לביטוח",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "אייקון גרופ",
     "catName": "מוצרי חשמל",
-    "catIdx": 18,
+    "catIdx": 19,
     "catPos": 17
   },
   {
     "name": "אייראנרג'י טק",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "איירטאצ",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
@@ -296,37 +296,37 @@
   {
     "name": "אילקס מדיקל",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אימאג’סט אינטרנשיונל",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אימד אינפיניטי מדיקל",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "אימקו",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אינטו",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אינטר תעשיות פלוס",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -338,55 +338,55 @@
   {
     "name": "אינטרנט זהב",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "אינטרקיור",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "אינפימר",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "אינפלי / אינפליי אויל קורפ",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "אינרום",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "איסתא",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "אירודרום",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אל-על",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "אלארום טכנולוגיות",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
@@ -398,61 +398,61 @@
   {
     "name": "אלביט מדיקל טכנולוג’יס",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "אלביט מערכות",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אלדן תחבורה",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "אלוט",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "אלומה",
     "catName": "קרנות תשתיות ",
-    "catIdx": 37,
+    "catIdx": 6,
     "catPos": 37
   },
   {
     "name": "אלומות השקעות",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "אלומיי קפיטל",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "אלוני חץ",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "אלטשולר שחם פיננסים",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "אלמדה ונצ’רס",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
@@ -464,61 +464,61 @@
   {
     "name": "אלמור",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אלספק",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "אלעד מערכות תוכנה",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "אלקו",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "אלקטרה",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אלקטרה מוצרי צריכה",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "אלקטרה נדל”ן",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אלקטריאון וירלס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אלרוב נדל”ן",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אלרון ונצ'רס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -530,13 +530,13 @@
   {
     "name": "אמיליה פיתוח",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "אמנת",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
@@ -548,61 +548,61 @@
   {
     "name": "אמת מיחשוב",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "אנג׳ל שלמה",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "אנדימד",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אנויז'ן",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "אנלייבקס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אנלייט אנרגיה",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "אנליסט אי.אמ.אס.",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "אנרג’יאן פי.אל.סי",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "אנרג’ין טכנולוגיות",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אנרג’יקס",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
@@ -614,31 +614,31 @@
   {
     "name": "אס.אר אקורד",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "אס.טי.גי",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "אספן גרופ",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "אפולו פאוור",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "אפי נכסים",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -650,19 +650,19 @@
   {
     "name": "אפיטומי מדיקל",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אפסלון ברנדס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אפקון החזקות",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -674,49 +674,49 @@
   {
     "name": "אקוואריוס מנועים /ולוריקס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "אקויטל",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "אקונרג’י",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "אקופיה",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "אקס.טי.אל",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "אקסון ויז'ן",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אקסיליון",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "אקסל סולושנס",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
@@ -728,37 +728,37 @@
   {
     "name": "אקרשטיין",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "אר פי אופטיקל",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "אר.אס.אל",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "ארבה רובוטיקס",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "ארגו פרופרטיז",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "ארד",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
@@ -776,19 +776,19 @@
   {
     "name": "אריקה כרמל-טק/ אריקה בי קיור לייזר",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "ארית תעשיות",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "ארן מחקר ופיתוח",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -800,37 +800,37 @@
   {
     "name": "באבלס",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "באטמ תקשורת מתקדמת",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "באפ טכנולוגיות",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "בול מסחר",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "בוליגו קפיטל",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "בונוס ביוגרופ",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
@@ -842,19 +842,19 @@
   {
     "name": "בזק",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "בי קומיוניקיישנס",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "ביג טק 50",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
@@ -866,43 +866,43 @@
   {
     "name": "ביו ויו",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "ביו מיט",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "ביו-דבש",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "ביולייט מדעי החיים",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "ביוליין",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "ביונ תלת מימד",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "בירמן עצים ופרזול",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -926,199 +926,199 @@
   {
     "name": "בית זיקוק אשדוד",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "בכורי שדה",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "בלאקאדג'/ בלקאדג' (לשעבר מיכמן)",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "בלדי",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "בלו וייב",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "בלייד ריינג’ר",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "בליץ טכנולוגיות",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "בלנדר טכנולוגיות פיננסיות",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "בנק דיסקונט",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "בנק הפועלים",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "בנק ירושלים",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "בנק לאומי",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "בנק מזרחי טפחות",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "בראק קפיטל פרופרטיז אן.וי",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "בריינסווי",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "בריל תעשיות נעליים",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "ברימאג",
     "catName": "מוצרי חשמל",
-    "catIdx": 18,
+    "catIdx": 19,
     "catPos": 17
   },
   {
     "name": "ברם תעשיות",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "ברן",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "ברנד תעשיות",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "ברק בית השקעות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "ברקת קפיטל",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "בתי זיקוק לנפט",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "ג'י וואן פתרונות אבטחה",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "ג’י סיטי",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "ג׳י.אף.סי גרין",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "ג'י.פי גלובל פאוור",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "ג'ין טכנולוגיות בינה מלאכותית",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "ג’נגו קונקטיביטי",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "ג’נסל",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "ג’נריישן קפיטל",
     "catName": "קרנות תשתיות ",
-    "catIdx": 37,
+    "catIdx": 6,
     "catPos": 37
   },
   {
     "name": "גאון אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "גאון קבוצה",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
@@ -1130,109 +1130,109 @@
   {
     "name": "גבעות עולם חיפושי נפט",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "גוטו",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "גולד בונד",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "גולדן אנרג'י",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "גולן פלסטיק",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "גולף",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "גיידליין",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "גילת טלקום",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "גיקס אינטרנט",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "גלאסבוקס",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "גלוב אנרגיה יהש",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "גלובל כנפיים ליסינג",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "גלובל פיי",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "גלוברנדס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "גלילאו טק",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "גמלא הראל",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "גן שמואל מזון",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "גניגר",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
@@ -1244,13 +1244,13 @@
   {
     "name": "גרופ 107",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "גרייס ברידינג",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -1262,13 +1262,13 @@
   {
     "name": "דור אלון",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "דוראל אנרגיה",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
@@ -1280,19 +1280,19 @@
   {
     "name": "די.אן.איי ביומדיקל",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "די.אס.איי.טי פתרונות",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "דיפלומט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -1304,25 +1304,25 @@
   {
     "name": "דלק קבוצה",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "דלק רכב",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "דלתא גליל",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "דלתא ישראל מותגים",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
@@ -1334,85 +1334,85 @@
   {
     "name": "דן מלונות",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "דנאל",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "דניה סיבוס",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "הבורסה לניירות ערך",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "הבנק הבינלאומי",
     "catName": "בנקים",
-    "catIdx": 11,
+    "catIdx": 12,
     "catPos": 11
   },
   {
     "name": "הדסית ביו",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "הולמס פלייס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "הום ביוגז",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "הזדמנות ישראלית",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "החברה לישראל",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "הייב 2040 יהש",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "הייפר גלובל",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "הייקון מערכות",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "הכשרת הישוב",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
@@ -1424,37 +1424,37 @@
   {
     "name": "המשביר 365",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "הפניקס",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "הראל השקעות",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "וואליו קפיטל/ לשעבר פסגות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "וואן טכנולוגיות",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "ווטר אי או",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -1466,13 +1466,13 @@
   {
     "name": "ווינד באז",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "ווישור גלובלטק",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
@@ -1490,25 +1490,25 @@
   {
     "name": "וילי פוד",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "ויליפוד אינטרנשיונל",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "וילק",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "ויקטורי",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
@@ -1520,37 +1520,37 @@
   {
     "name": "ורידיס",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "זוז פאוור",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "זנלכל",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "זפירוס ווינג אנרג’יס",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "חברת השקעות דיסקונט / דיסקונט השקעות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "חג׳ג ייזום נדל\"ן",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
@@ -1562,145 +1562,145 @@
   {
     "name": "חג’ג’ אירופה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "חד-אסף",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "חילן",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "חירון מסחר השקעות ומבני תעשיה בע״מ",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "חלל תקשורת",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "חממה סחר",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "חמת",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "טאואר",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "טבע",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "טוגדר",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "טונדו סמארט",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "טופ גאם",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "טופ גרופ/ טופ מערכות",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "טורבוג’ן",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "טי.אס.ג'י",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "טי.ג’י.איי תשתיות",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "טיב טעם",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
     "name": "טכנולוגיות גילוי אש גז",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "טכנופלס ונצרס",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "טלסיס",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "טקטונה",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "טראלייט",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "טראקנט",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "טרמינל איקס",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
@@ -1724,55 +1724,55 @@
   {
     "name": "יוחננוף",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
     "name": "יוטרון",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "יומן אקסטנשנס",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "יונט קרדיט",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "יוניבו",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "יוניברסל מוטורס",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "יוניטרוניקס",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "יוניק-טק",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "יוניקורן טכנולוגיות",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
@@ -1790,31 +1790,31 @@
   {
     "name": "יעקב פיננסים",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "יעקובי קבוצה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "יצוא חברה להשקעות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "ישראייר",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "ישראכרט",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
@@ -1826,25 +1826,25 @@
   {
     "name": "ישראל קנדה מלונות",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "ישראמקו נגב",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "ישרוטל",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "ישרס אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
@@ -1856,55 +1856,55 @@
   {
     "name": "כהן פיתוח גז ונפט",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "כלל ביוטכנולוגיה",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "כלל ביטוח",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "כן פייט ביופארמה",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "כנפיים אחזקות",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "כפרית",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "כרמית",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "כרמל קורפ",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "להב אל.אר",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
@@ -1916,31 +1916,31 @@
   {
     "name": "לודן",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "לודן- טק",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "לוזון אשראי ופיננסים (לשעבר טריא)",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "לוזון קבוצה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "לוזון רונסון",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -1970,55 +1970,55 @@
   {
     "name": "ליברה",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
     "name": "לייבפרסון",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "ליניאג’ תרפיוטיקס",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "לכיש",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "לסיכו",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "לפידות חלץ יהש",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "לפידות קפיטל",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "מאסיבית",
     "catName": "הדפסה",
-    "catIdx": 19,
+    "catIdx": 20,
     "catPos": 18
   },
   {
     "name": "מבטח שמיר",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
@@ -2036,13 +2036,13 @@
   {
     "name": "מג’יק",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "מגדל ביטוח",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
@@ -2072,43 +2072,43 @@
   {
     "name": "מדיפאואר",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "מדיפרס בריאות",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "מהדרין",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "מודיעין אנרגיה/ מודיעין יהש",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "מולטי ריטייל",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "מור גמל ופנסיה",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "מור השקעות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
@@ -2120,19 +2120,19 @@
   {
     "name": "מחלבות גד",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "מטריסלף",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "מטריקס",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
@@ -2144,67 +2144,67 @@
   {
     "name": "מיה דיינמיקס",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "מיטב בית השקעות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "מיטב טרייד",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "מיטרוניקס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "מיכפל",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "מילניום פוד טק שותפות מוגבלת",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "מימון ישיר",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "מיקרונט",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "מירלנד",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "מישורים",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "מכלול מימון",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
@@ -2216,37 +2216,37 @@
   {
     "name": "מלם תים",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "מלם תים אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "מלרן פרוייקטים",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "מנדלסון תשתיות",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "מנועי בית שמש",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "מנורה מבטחים החזקות",
     "catName": "חברות ביטוח",
-    "catIdx": 10,
+    "catIdx": 11,
     "catPos": 10
   },
   {
@@ -2258,25 +2258,25 @@
   {
     "name": "מניף",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "מנרב / קבוצת מנרב",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "מנרה ונצ’רס",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "מפעלים פטרוכימיים בישראל",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
@@ -2288,13 +2288,13 @@
   {
     "name": "מקס סטוק",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "מר תעשיות",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
@@ -2306,163 +2306,163 @@
   {
     "name": "מרחביה אחזקות",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "מרכז הפורמייקה אברבוך",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "משק אנרגיה",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "נאוויטס פטרוליום/ נאויטס",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "נאוי גרופ",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "נאייקס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "נובה",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "נובולוג",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "נוסטרומו אנרגיה",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "נופר אנרג’י",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "נור אינק אינוביישנס",
     "catName": "הדפסה",
-    "catIdx": 19,
+    "catIdx": 20,
     "catPos": 18
   },
   {
     "name": "נורסטאר החזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "נטו אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "נטו מ.ע. אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "נטו מלינדה",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "נטו מלינדה (NTML)",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "ניו-מד אנרג’י",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "נייס",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "ניסן",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "נכסים ובנין",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "נפטא",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "נקסט ג’ן",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "נקסט ויז’ן",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "נקסטאייג' ת'רפיוטיקס",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "נקסטייג’ ת’רפיוטיקס",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "נקסטפרם טכנולוגיות",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "נקסטקום",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -2480,49 +2480,49 @@
   {
     "name": "סאמיט אחזקות",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "סאני תקשורת",
     "catName": "מוצרי חשמל",
-    "catIdx": 18,
+    "catIdx": 19,
     "catPos": 17
   },
   {
     "name": "סאנפלאואר",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "סבוריט",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "סולאיר אנרגיות מתחדשות",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "סולטרה אנרגיה",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "סולרום",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "סונוביה",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -2534,31 +2534,31 @@
   {
     "name": "סופוויב",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "סופרגז פאוור / אלקטרה פאוור",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "סופרין",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "סטארק פאוור",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "סטורג’ דרופ",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
@@ -2570,43 +2570,43 @@
   {
     "name": "סי-לאב",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "סיאון אינווסטמנט",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "סיאי",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "סייברוואן",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "סילבר קסטל",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "סינאל",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "סיפיה ויז’ן",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
@@ -2624,67 +2624,67 @@
   {
     "name": "סלקום",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "סמארט אגרו",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "סמארט שוטר",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "סנו",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "ספאנטק",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "ספידווליו",
     "catName": "שירותי IT",
-    "catIdx": 15,
+    "catIdx": 16,
     "catPos": 36
   },
   {
     "name": "ספרינג ונצ’רס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "סקודיקס",
     "catName": "הדפסה",
-    "catIdx": 19,
+    "catIdx": 20,
     "catPos": 18
   },
   {
     "name": "סקופ",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "סקייליין",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "עומר הנדסה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -2696,19 +2696,19 @@
   {
     "name": "עילדב",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "עין שלישית",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "עלבד משואות יצחק",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
@@ -2720,31 +2720,31 @@
   {
     "name": "עלות מימון",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "עלמא יסודות/ עלמה יסודות (לשעבר: קבסיר)",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "עמיעד מערכות מים",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "עמיר שיווק והשקעות בחקלאות",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "עמל ומעבר",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
@@ -2756,19 +2756,19 @@
   {
     "name": "ערד",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "ערך פיננסים",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "עשות אשקלון",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
@@ -2780,25 +2780,25 @@
   {
     "name": "פאלו אלטו (Palo Alto Networks)",
     "catName": "סייבר ואבטחת מידע",
-    "catIdx": 17,
+    "catIdx": 18,
     "catPos": 16
   },
   {
     "name": "פארמוקן",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "פוורפליט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "פוטומיין",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -2810,169 +2810,169 @@
   {
     "name": "פולירם תעשיות פלסטיק",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "פוםוום",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "פוקס",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "פורמולה מערכות",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "פורסייט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "פז אנרגיה",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "פטרוטקס שותפות מוגבלת",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "פיבי אחזקות",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "פיט השקעות שותפות מוגבלת",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "פייטון",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "פיימנט טכנולוגיות פיננסיות",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "פינרג’י",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "פיסיבי טכנולוגיות",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "פלאזה סנטרס",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "פלורי",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "פליינג ספארק",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "פלנטארק ביו",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "פלסאון תעשיות",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "פלסאנמור",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "פלסטו קרגל",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "פלסטופיל",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "פלרם",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "פמס",
     "catName": "חברות ביטחוניות",
-    "catIdx": 9,
+    "catIdx": 10,
     "catPos": 9
   },
   {
     "name": "פנאקסיה ישראל",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "פנינסולה",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "פננטפארק",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "פסיירקס סי אנ אס ביוטק (לשעבר קנבוטק)",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "פרודלים השקעות",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
@@ -2984,49 +2984,49 @@
   {
     "name": "פרטנר",
     "catName": "תקשורת",
-    "catIdx": 14,
+    "catIdx": 15,
     "catPos": 14
   },
   {
     "name": "פרידנזון",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "פריון",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "פריורטק",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "פריים אנרג’י",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "פרימוטק",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "פרפל ביוטק",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "פרקומט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
@@ -3038,13 +3038,13 @@
   {
     "name": "פתאל החזקות",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "צור שמיר",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
@@ -3074,139 +3074,139 @@
   {
     "name": "קבוצת מיחשוב ישיר",
     "catName": "חברות נכס בודד",
-    "catIdx": 29,
+    "catIdx": 30,
     "catPos": 28
   },
   {
     "name": "קבוצת סוגת",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "קבוצת פסגות",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "קדימהסטם",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "קווינקו",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "קוויקליזארד",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
     "name": "קווליטאו",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "קומפיוגן",
     "catName": "ביומד ומדעי החיים",
-    "catIdx": 27,
+    "catIdx": 28,
     "catPos": 26
   },
   {
     "name": "קונטיניואל",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "קופיקס גרופ",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
     "name": "קיסטון אינפרא",
     "catName": "קרנות תשתיות ",
-    "catIdx": 37,
+    "catIdx": 6,
     "catPos": 37
   },
   {
     "name": "קליל",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "קללת המנצח",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "קמהדע",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "קמטק",
     "catName": "אלקטרוניקה ורכיבים",
-    "catIdx": 31,
+    "catIdx": 32,
     "catPos": 30
   },
   {
     "name": "קנאשור",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "קנדה גלובל",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "קנון",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "קנזון",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "קסטרו",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "קפיטל פוינט",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "קרדן אן.וי",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "קרדן ישראל",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
@@ -3218,19 +3218,19 @@
   {
     "name": "קרור אחזקות",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "קריאטיב מדיה",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "קרסו מוטורס",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
@@ -3248,31 +3248,31 @@
   {
     "name": "קשרי תעופה",
     "catName": "מלונאות תעופה ותיירות",
-    "catIdx": 24,
+    "catIdx": 25,
     "catPos": 23
   },
   {
     "name": "ר.ג.א/רגא",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "ראלקו סוכנויות",
     "catName": "מוצרי חשמל",
-    "catIdx": 18,
+    "catIdx": 19,
     "catPos": 17
   },
   {
     "name": "רב בריח תעשיות",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "רבד",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -3284,13 +3284,13 @@
   {
     "name": "רבל",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "רובוגרופ",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
@@ -3302,7 +3302,7 @@
   {
     "name": "רותם אנרגיה ומחצבים",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
@@ -3326,49 +3326,49 @@
   {
     "name": "ריטייל מיינדס",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "ריטיילורס",
     "catName": "רשתות שיווק",
-    "catIdx": 21,
+    "catIdx": 22,
     "catPos": 20
   },
   {
     "name": "ריי טי אל וי",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "רייזור לאבס",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "רימון",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "רימוני תעשיות",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "רם-און",
     "catName": "תעשיית הפלסטיק",
-    "catIdx": 8,
+    "catIdx": 9,
     "catPos": 8
   },
   {
     "name": "רמי לוי",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
@@ -3392,37 +3392,37 @@
   {
     "name": "רפק תקשורת ותשתיות",
     "catName": "יזמות סולארית ואנרגיה מתחדשת",
-    "catIdx": 33,
+    "catIdx": 34,
     "catPos": 32
   },
   {
     "name": "רציו אנרגיות",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "רציו פטרוליום",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "רקח",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "שגריר",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "שדה נדל\"ן",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
@@ -3434,61 +3434,61 @@
   {
     "name": "שוהם ביזנס",
     "catName": "אשראי חוץ בנקאי",
-    "catIdx": 12,
+    "catIdx": 13,
     "catPos": 12
   },
   {
     "name": "שופרסל",
     "catName": "קמעונאות מזון",
-    "catIdx": 22,
+    "catIdx": 23,
     "catPos": 21
   },
   {
     "name": "שור טק",
     "catName": "שותפויות מו”פ",
-    "catIdx": 26,
+    "catIdx": 27,
     "catPos": 25
   },
   {
     "name": "שטראוס גרופ",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "שיח מדיקל",
     "catName": "קנאביס",
-    "catIdx": 28,
+    "catIdx": 29,
     "catPos": 27
   },
   {
     "name": "שיכון ובינוי",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "שיכון ובינוי אנרגיה",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "שירותי בנק אוטומטיים",
     "catName": "בתי השקעות ושירותים פיננסיים",
-    "catIdx": 13,
+    "catIdx": 14,
     "catPos": 13
   },
   {
     "name": "שלוש 3 דיאם ייצור דיגיטלי",
     "catName": "הדפסה",
-    "catIdx": 19,
+    "catIdx": 20,
     "catPos": 18
   },
   {
     "name": "שמיים אימפרוב",
     "catName": "חברות תוכנה",
-    "catIdx": 16,
+    "catIdx": 17,
     "catPos": 15
   },
   {
@@ -3506,103 +3506,103 @@
   {
     "name": "שניב",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   },
   {
     "name": "שנפ",
     "catName": "רכב ותחבורה",
-    "catIdx": 25,
+    "catIdx": 26,
     "catPos": 24
   },
   {
     "name": "שפיר הנדסה",
     "catName": "נדל”ן מניב בחו”ל",
-    "catIdx": 6,
+    "catIdx": 7,
     "catPos": 6
   },
   {
     "name": "שרין",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "תאת טכנולוגיות",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "תדאה פיתוח",
     "catName": "חברות החזקה מגוונות",
-    "catIdx": 30,
+    "catIdx": 31,
     "catPos": 29
   },
   {
     "name": "תדיראן גרופ",
     "catName": "מוצרי חשמל",
-    "catIdx": 18,
+    "catIdx": 19,
     "catPos": 17
   },
   {
     "name": "תומר תמלוגי אנרגיה",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "תורפז",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "תיא השקעות",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "תיגבור",
     "catName": "חברות כוח אדם",
-    "catIdx": 32,
+    "catIdx": 33,
     "catPos": 31
   },
   {
     "name": "תיגי",
     "catName": "תחנות כוח ואגירת אנרגיה",
-    "catIdx": 20,
+    "catIdx": 21,
     "catPos": 19
   },
   {
     "name": "תיקון עולם קנביט",
     "catName": "שלדים וחברות מעטפת",
-    "catIdx": 35,
+    "catIdx": 36,
     "catPos": 34
   },
   {
     "name": "תמיס",
     "catName": "ייצור משקאות ומזון",
-    "catIdx": 23,
+    "catIdx": 24,
     "catPos": 22
   },
   {
     "name": "תמר פטרוליום",
     "catName": "נפט וגז",
-    "catIdx": 34,
+    "catIdx": 35,
     "catPos": 33
   },
   {
     "name": "תעוזה",
     "catName": "שאר המניות בישראל – א’-ת’",
-    "catIdx": 36,
+    "catIdx": 37,
     "catPos": 35
   },
   {
     "name": "תפרון",
     "catName": "תעשייה וייצור",
-    "catIdx": 7,
+    "catIdx": 8,
     "catPos": 7
   }
 ]
