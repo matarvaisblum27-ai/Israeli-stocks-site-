@@ -38,6 +38,47 @@ function flattenHtml(val: string | string[] | undefined): string {
   return val;
 }
 
+type CompanyStatus = 'מעניינת' | 'למעקב' | 'לא עוברת' | null;
+
+function detectStatus(html: string): CompanyStatus {
+  if (!html) return null;
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const tail = text.slice(-150);
+  if (tail.includes('לא עוברת')) return 'לא עוברת';
+  if (tail.includes('למעקב')) return 'למעקב';
+  if (tail.includes('מעניינת')) return 'מעניינת';
+  return null;
+}
+
+function setStatusInHtml(html: string, newStatus: CompanyStatus): string {
+  // Remove existing status patterns from the end of HTML
+  let cleaned = html;
+  // Remove patterns like: <strong>למעקב</strong>. or <strong>חברה מעניינת.</strong> etc.
+  cleaned = cleaned.replace(/<strong>\s*(למעקב|לא עוברת|חברה מעניינת\.?)\s*<\/strong>\.?\s*(<\/p>)?\s*$/i, '$2');
+  cleaned = cleaned.replace(/<strong>\s*(למעקב|לא עוברת|חברה מעניינת\.?)\s*\.?\s*<\/strong>\.?\s*(<\/p>)?\s*$/i, '$2');
+  // Also clean trailing whitespace/br before closing
+  cleaned = cleaned.replace(/(<br\s*\/?>|\s)+(<\/p>)\s*$/, '$2');
+  cleaned = cleaned.replace(/\s+$/, '');
+
+  if (!newStatus) return cleaned;
+
+  const statusText = newStatus === 'מעניינת' ? 'חברה מעניינת' : newStatus;
+  const badge = `<strong>${statusText}.</strong>`;
+
+  // If HTML ends with </p>, insert before it
+  if (cleaned.endsWith('</p>')) {
+    return cleaned.slice(0, -4) + ` ${badge}</p>`;
+  }
+  return cleaned + ` ${badge}`;
+}
+
+const STATUS_OPTIONS: Array<{ value: CompanyStatus; label: string; color: string; icon: string }> = [
+  { value: null, label: 'ללא', color: 'text-slate-500', icon: '—' },
+  { value: 'מעניינת', label: 'מעניינת', color: 'text-emerald-400', icon: '⭐' },
+  { value: 'למעקב', label: 'למעקב', color: 'text-amber-400', icon: '👁' },
+  { value: 'לא עוברת', label: 'לא עוברת', color: 'text-red-400', icon: '✗' },
+];
+
 /* ─── Toast ─── */
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
@@ -1222,6 +1263,28 @@ function CompanyEditor({
             + הוסף
           </button>
         </div>
+      </div>
+
+      {/* Status selector */}
+      <div className="mb-4 p-3 rounded-xl flex items-center gap-3 flex-wrap" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+        <span className="text-xs text-slate-400">סטטוס:</span>
+        {STATUS_OPTIONS.map((opt) => {
+          const current = detectStatus(html);
+          const isActive = current === opt.value;
+          return (
+            <button
+              key={opt.label}
+              onClick={() => setHtml(setStatusInHtml(html, opt.value))}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                isActive
+                  ? `${opt.color} ring-2 ring-current/30 bg-slate-800`
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              {opt.icon} {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Editor */}
