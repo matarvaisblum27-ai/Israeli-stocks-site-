@@ -1,11 +1,12 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Extension } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { useEffect, useCallback, useRef, useState } from 'react';
 
 interface RichEditorProps {
@@ -109,7 +110,56 @@ function MenuBar({ editor, onImageUpload }: { editor: ReturnType<typeof useEdito
 export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const skipNextUpdate = useRef(false);
+  const uploadRef = useRef<((file: File, pos?: number) => Promise<void>) | null>(null);
+
+  // Create a stable TipTap extension for image drop/paste using ProseMirror plugin
+  const ImageDropPaste = useRef(
+    Extension.create({
+      name: 'imageDropPaste',
+      addProseMirrorPlugins() {
+        return [
+          new Plugin({
+            key: new PluginKey('imageDropPaste'),
+            props: {
+              handleDOMEvents: {
+                drop(view, event) {
+                  const dt = event.dataTransfer;
+                  if (!dt?.files?.length) return false;
+                  const file = dt.files[0];
+                  if (!file.type.startsWith('image/')) return false;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  // Get drop position
+                  const coords = { left: event.clientX, top: event.clientY };
+                  const pos = view.posAtCoords(coords)?.pos ?? view.state.selection.from;
+                  if (uploadRef.current) uploadRef.current(file, pos);
+                  return true;
+                },
+                paste(view, event) {
+                  const items = event.clipboardData?.items;
+                  if (!items) return false;
+                  for (const item of Array.from(items)) {
+                    if (item.type.startsWith('image/')) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      const file = item.getAsFile();
+                      if (file && uploadRef.current) {
+                        uploadRef.current(file, view.state.selection.from);
+                      }
+                      return true;
+                    }
+                  }
+                  return false;
+                },
+              },
+            },
+          }),
+        ];
+      },
+    })
+  ).current;
 
   const editor = useEditor({
     extensions: [
@@ -118,37 +168,13 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
       Link.configure({ openOnClick: false }),
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      ImageDropPaste,
     ],
     content,
     editorProps: {
       attributes: {
         class: 'prose prose-invert max-w-none p-4 min-h-[40vh] outline-none text-sm leading-relaxed',
         dir,
-      },
-      handleDrop: (view, event, _slice, moved) => {
-        if (!moved && event.dataTransfer?.files?.length) {
-          const file = event.dataTransfer.files[0];
-          if (file.type.startsWith('image/')) {
-            event.preventDefault();
-            uploadImage(file, view.state.selection.from);
-            return true;
-          }
-        }
-        return false;
-      },
-      handlePaste: (view, event) => {
-        const items = event.clipboardData?.items;
-        if (items) {
-          for (const item of Array.from(items)) {
-            if (item.type.startsWith('image/')) {
-              event.preventDefault();
-              const file = item.getAsFile();
-              if (file) uploadImage(file, view.state.selection.from);
-              return true;
-            }
-          }
-        }
-        return false;
       },
     },
     onUpdate: ({ editor: ed }) => {
@@ -171,6 +197,7 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
   const uploadImage = useCallback(async (file: File, pos?: number) => {
     if (!editor) return;
     setUploading(true);
+    setDragOver(false);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -184,7 +211,6 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
         } else {
           editor.chain().focus().setImage({ src, alt: file.name }).run();
         }
-        // Also store the public URL as data attribute for future reference
         onChange(editor.getHTML());
       } else {
         alert(data.error || 'שגיאה בהעלאת תמונה');
@@ -195,6 +221,11 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
       setUploading(false);
     }
   }, [editor, onChange]);
+
+  // Keep uploadRef in sync so the ProseMirror plugin can call it
+  useEffect(() => {
+    uploadRef.current = uploadImage;
+  }, [uploadImage]);
 
   const handleImageUpload = useCallback(() => {
     fileInputRef.current?.click();
@@ -207,10 +238,29 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
   }, [uploadImage]);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+    <div
+      className={`rounded-xl overflow-hidden transition-colors ${dragOver ? 'ring-2 ring-blue-400/60' : ''}`}
+      style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+      onDragOver={(e) => {
+        if (e.dataTransfer?.types?.includes('Files')) {
+          e.preventDefault();
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        // Only clear if leaving the wrapper entirely
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setDragOver(false);
+        }
+      }}
+      onDrop={() => setDragOver(false)}
+    >
       <MenuBar editor={editor} onImageUpload={handleImageUpload} />
       {uploading && (
         <div className="px-4 py-2 text-xs text-amber-400 bg-amber-500/10">מעלה תמונה...</div>
+      )}
+      {dragOver && (
+        <div className="px-4 py-2 text-xs text-blue-400 bg-blue-500/10 text-center">שחרר כדי להעלות תמונה 📷</div>
       )}
       <EditorContent editor={editor} />
       <input
