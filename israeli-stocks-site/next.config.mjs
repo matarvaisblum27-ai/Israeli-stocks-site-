@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 
 const securityHeaders = [
-  // Prevent clickjacking — page cannot be embedded in an iframe
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  // Allow embedding in shlomiardan.com WordPress site + same-origin
+  { key: 'X-Frame-Options', value: 'ALLOW-FROM https://shlomiardan.com' },
   // Stop browsers from MIME-sniffing
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   // Enable XSS filter in older browsers
@@ -32,6 +32,7 @@ const securityHeaders = [
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "frame-ancestors 'self' https://shlomiardan.com https://*.shlomiardan.com",
       "upgrade-insecure-requests",
     ].join('; '),
   },

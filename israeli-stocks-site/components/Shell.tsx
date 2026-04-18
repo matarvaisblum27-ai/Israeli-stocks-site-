@@ -540,8 +540,8 @@ function MultiLineChart({
 
   // Collect all dates and values to determine scales
   const allDatesSet = new Set<string>();
-  let globalMin = 0;
-  let globalMax = 0;
+  let globalMin = Infinity;
+  let globalMax = -Infinity;
   for (const s of series) {
     for (const d of s.data) {
       allDatesSet.add(d.date);
