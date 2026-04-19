@@ -110,7 +110,7 @@ export async function GET(request: Request) {
         }))
       ),
       // USD/ILS exchange rate (live)
-      yahooDaily('USDILS=X', periodStart),
+      yahooDaily('ILS=X', periodStart),
       // Benchmark indices (live prices)
       ...BENCHMARKS.map(async (b) => ({
         ...b,
@@ -128,6 +128,10 @@ export async function GET(request: Request) {
       }
     }
     const getFx = createFxLookup(fxMap);
+
+    // ── Dynamic base FX: find the historical FX rate near SA20 launch date from Yahoo ──
+    // This ensures both fx_t0 and fx_t1 come from the SAME data source (Yahoo)
+    const dynamicBaseFx = getFx(SA20_LAUNCH_DATE) || BASE_EXCHANGE_RATES.USD_ILS;
 
     // ── Build per-stock data using STATIC base prices from config ──
     const stockBasePrices = new Map(
@@ -239,9 +243,6 @@ export async function GET(request: Request) {
       if (!staticBase || staticBase <= 0)
         return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      // STATIC base FX from config
-      const staticBaseFx = BASE_EXCHANGE_RATES.USD_ILS;
-
       const data: Array<{ date: string; value: number }> = [];
       for (let i = 0; i < dates.length; i++) {
         if (dates[i] < SA20_LAUNCH_DATE) continue;
@@ -254,11 +255,12 @@ export async function GET(request: Request) {
           if (!liveFx) continue;
 
           // THE FORMULA:
-          // Total_ILS_Return = ((livePrice / staticBase) * (liveFx / staticBaseFx)) - 1
+          // Total_ILS_Return = ((livePrice / staticBase) * (liveFx / dynamicBaseFx)) - 1
+          // Both fx_t0 and fx_t1 come from Yahoo → no data source mismatch
           const result = calcILSReturn({
             index_t0: staticBase,       // STATIC from config
             index_t1: livePrice,        // LIVE from Yahoo
-            fx_t0: staticBaseFx,        // STATIC from config
+            fx_t0: dynamicBaseFx,       // DYNAMIC from Yahoo (near launch date)
             fx_t1: liveFx,              // LIVE from Yahoo
           });
           data.push({ date: dates[i], value: result.ilsIndexValue });
@@ -315,7 +317,8 @@ export async function GET(request: Request) {
         staticBasePrice: cfg?.basePrice || 'fallback',
         currency: cfg?.currency || '?',
         fxApplied: cfg?.currency === 'USD',
-        staticBaseFx: cfg?.currency === 'USD' ? BASE_EXCHANGE_RATES.USD_ILS : 'N/A',
+        dynamicBaseFx: cfg?.currency === 'USD' ? dynamicBaseFx : 'N/A',
+        configBaseFx: cfg?.currency === 'USD' ? BASE_EXCHANGE_RATES.USD_ILS : 'N/A',
         liveFxLatest: cfg?.currency === 'USD' ? getFx(allDates[allDates.length - 1]) : 'N/A',
       };
     }
@@ -332,9 +335,10 @@ export async function GET(request: Request) {
       startDate: FETCH_START_DATE,
       fxRatesCount: fxMap.size,
       liveFxRate: getFx(allDates[allDates.length - 1]),
-      staticBaseFx: BASE_EXCHANGE_RATES.USD_ILS,
+      dynamicBaseFx,
+      configBaseFx: BASE_EXCHANGE_RATES.USD_ILS,
       benchmarkDebug,
-      _version: 'refactor-static-config-v2',
+      _version: 'fix-fx-ticker-and-dynamic-base-v3',
     });
   } catch (error) {
     return NextResponse.json(
