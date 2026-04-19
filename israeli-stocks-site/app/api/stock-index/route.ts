@@ -7,8 +7,9 @@ function loadTickerData() {
   return JSON.parse(readFileSync(filePath, 'utf-8'));
 }
 
-// Cache the result for 1 hour (Vercel edge cache)
-export const revalidate = 3600;
+// No route-level caching — always fetch fresh data
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 // ── Simple in-memory rate limiter ──────────────────────────────────────────
 // Allows MAX_REQUESTS per IP per WINDOW_MS.  Resets automatically per window.
@@ -58,7 +59,7 @@ async function fetchBoiRates(startDate: string): Promise<Map<string, number>> {
     const url = `https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STAT/EXR/1.0/RER_USD_ILS?startperiod=${startDate}&endperiod=${today}&format=sdmx-json`;
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     });
     if (!res.ok) return map;
     const data = await res.json();
@@ -123,7 +124,7 @@ async function fetchHistory(ticker: string, periodStart: Date): Promise<{ dates:
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
-      next: { revalidate: 3600 },
+      cache: 'no-store',
     });
 
     if (!res.ok) return null;
