@@ -64,11 +64,12 @@ const INDEX_START = '2026-04-02';
 const SA20_LAUNCH = '2026-04-06';
 // Hardcoded fallback base FX rate (USD/ILS on SA20 launch April 6, 2026) — from Shlomi's spreadsheet
 const FALLBACK_BASE_FX = 3.130375;
+// Hardcoded base prices from Shlomi's spreadsheet (שער השקת מדד 06/04/26)
 const BENCHMARKS = [
-  { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
-  { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
-  { name: 'Nasdaq 100',  ticker: '^NDX',      color: '#a78bfa', currency: 'USD' },
-  { name: 'MSCI World',  ticker: 'URTH',      color: '#f472b6', currency: 'USD' },
+  { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS', basePrice: 4107.92 },
+  { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD', basePrice: 6582.69 },
+  { name: 'Nasdaq 100',  ticker: '^NDX',      color: '#a78bfa', currency: 'USD', basePrice: 0 },
+  { name: 'MSCI World',  ticker: 'URTH',      color: '#f472b6', currency: 'USD', basePrice: 0 },
 ];
 
 export async function GET(request: Request) {
@@ -81,7 +82,7 @@ export async function GET(request: Request) {
   try {
     const periodStart = new Date(INDEX_START);
     const tickerData = loadTickerData();
-    const stocks: Array<{ name: string; ticker: string }> = tickerData.stocks;
+    const stocks: Array<{ name: string; ticker: string; basePrice?: number; dividends?: number }> = tickerData.stocks;
 
     // ── Fetch everything in parallel ──
     const [stockResults, fxResult, ...benchmarkResults] = await Promise.all([
@@ -132,39 +133,26 @@ export async function GET(request: Request) {
       }
     }
 
-    // Build per-stock price maps with base price
-    // Use OPENING price ON April 6 (SA20 launch day — TASE trades on Sundays)
-    // This matches Shlomi's "שער השקת מדד 06/04/26" column
+    // Build per-stock price maps with HARDCODED base prices from Shlomi's spreadsheet
+    // These are the exact "שער השקת מדד 06/04/26" values — guaranteed to match
+    const basePriceMap = new Map<string, number>();
+    const dividendMap = new Map<string, number>();
+    for (const s of stocks) {
+      if (s.basePrice) basePriceMap.set(s.ticker, s.basePrice);
+      if (s.dividends) dividendMap.set(s.ticker, s.dividends);
+    }
+
     const stockMaps = stockHistories.map((sh) => {
       const map = new Map<string, number>();
       for (let i = 0; i < sh.dates.length; i++) {
         if (sh.prices[i] != null && !isNaN(sh.prices[i])) map.set(sh.dates[i], sh.prices[i]);
       }
 
-      // 1st priority: opening price ON April 6 (the launch date itself)
-      let basePrice = 0;
-      let baseDateUsed = '';
-      for (let i = 0; i < sh.dates.length; i++) {
-        if (sh.dates[i] === SA20_LAUNCH && sh.opens[i] != null && !isNaN(sh.opens[i]) && sh.opens[i] > 0) {
-          basePrice = sh.opens[i];
-          baseDateUsed = sh.dates[i];
-          break;
-        }
-      }
-      // 2nd priority: closing price on last trading day before April 6
-      if (basePrice === 0) {
-        for (let i = sh.dates.length - 1; i >= 0; i--) {
-          if (sh.dates[i] < SA20_LAUNCH && sh.prices[i] != null && !isNaN(sh.prices[i]) && sh.prices[i] > 0) {
-            basePrice = sh.prices[i];
-            baseDateUsed = sh.dates[i];
-            break;
-          }
-        }
-      }
+      // Use hardcoded base price from JSON (Shlomi's spreadsheet values)
+      const basePrice = basePriceMap.get(sh.ticker) || 0;
+      const dividends = dividendMap.get(sh.ticker) || 0;
 
-      console.log(`[SA20] ${sh.name} (${sh.ticker}): basePrice=${basePrice} on ${baseDateUsed}, latestPrice=${sh.prices[sh.prices.length - 1]} on ${sh.dates[sh.dates.length - 1]}, return=${basePrice > 0 ? (((sh.prices[sh.prices.length - 1] / basePrice) - 1) * 100).toFixed(2) : 'N/A'}%`);
-
-      return { name: sh.name, ticker: sh.ticker, map, basePrice };
+      return { name: sh.name, ticker: sh.ticker, map, basePrice, dividends };
     });
 
     // Collect all dates
@@ -183,7 +171,8 @@ export async function GET(request: Request) {
         if (sm.basePrice <= 0) continue;
         const p = sm.map.get(date);
         if (p != null && !isNaN(p)) {
-          totalPct += ((p - sm.basePrice) / sm.basePrice) * 100;
+          // Return = ((price + dividends) / basePrice) - 1
+          totalPct += (((p + sm.dividends) / sm.basePrice) - 1) * 100;
           count++;
         }
       }
@@ -239,8 +228,10 @@ export async function GET(request: Request) {
       }
       if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      // TASE uses opening price on April 6, US uses closing price before April 6
-      const basePrice = (isTASE && dates[baseIdx] === SA20_LAUNCH) ? opens[baseIdx] : prices[baseIdx];
+      // Use hardcoded base price from Shlomi's spreadsheet if available
+      // Otherwise fall back to: TASE=open on April 6, US=close before April 6
+      const fallbackPrice = (isTASE && dates[baseIdx] === SA20_LAUNCH) ? opens[baseIdx] : prices[baseIdx];
+      const basePrice = (br.basePrice && br.basePrice > 0) ? br.basePrice : fallbackPrice;
       const baseDate = dates[baseIdx];
 
       const needsFx = br.currency === 'USD';
@@ -303,12 +294,13 @@ export async function GET(request: Request) {
     });
 
     // ── Individual stock performance ──
+    // Return = ((current_price + dividends) / base_price) - 1
     const stockPerformance = stockMaps
       .filter((sm) => sm.basePrice > 0)
       .map((sm) => {
         const entries = Array.from(sm.map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
         const latestPrice = entries[0]?.[1] || sm.basePrice;
-        const pctChange = ((latestPrice - sm.basePrice) / sm.basePrice) * 100;
+        const pctChange = (((latestPrice + sm.dividends) / sm.basePrice) - 1) * 100;
         return { name: sm.name, ticker: sm.ticker, pctChange: Math.round(pctChange * 100) / 100, latestPrice };
       });
 
