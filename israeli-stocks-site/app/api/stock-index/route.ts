@@ -44,12 +44,12 @@ interface YahooChartResult {
 const BENCHMARKS = [
   { name: 'ת"א 125', ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500', ticker: '^GSPC', color: '#f59e0b', currency: 'USD' },
-  { name: 'NASDAQ', ticker: '^IXIC', color: '#a78bfa', currency: 'USD' },
+  { name: 'Nasdaq 100', ticker: '^NDX', color: '#a78bfa', currency: 'USD' },
   { name: 'MSCI World', ticker: 'URTH', color: '#f472b6', currency: 'USD' },
 ];
 
-/* USD/ILS ticker for currency adjustment */
-const USDILS_TICKER = 'USDILS=X';
+/* USD/ILS tickers for currency adjustment (try multiple in case one fails) */
+const USDILS_TICKERS = ['USDILS=X', 'ILS=X', 'ILSUSD=X'];
 
 /* Index inception date: April 6, 2026 */
 const INDEX_START = '2026-04-06';
@@ -114,7 +114,7 @@ export async function GET(request: Request) {
     const stocks = tickerData.stocks;
 
     // Fetch all stock histories + benchmarks + USD/ILS in parallel
-    const [stockResults, usdIlsResult, ...benchmarkResults] = await Promise.all([
+    const [stockResults, ...benchmarkResults] = await Promise.all([
       // SA20 stocks
       Promise.allSettled(
         stocks.map(async (stock: { name: string; ticker: string }) => {
@@ -122,8 +122,6 @@ export async function GET(request: Request) {
           return { name: stock.name, ticker: stock.ticker, history };
         })
       ),
-      // USD/ILS exchange rate
-      fetchHistory(USDILS_TICKER, periodStart),
       // Benchmarks
       ...BENCHMARKS.map(async (b) => {
         const history = await fetchHistory(b.ticker, periodStart);
@@ -131,13 +129,23 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    // Build USD/ILS rate map (date → rate)
+    // Fetch USD/ILS exchange rate — try multiple tickers
     const usdIlsMap = new Map<string, number>();
-    if (usdIlsResult) {
-      for (let i = 0; i < usdIlsResult.dates.length; i++) {
-        if (usdIlsResult.prices[i] != null && !isNaN(usdIlsResult.prices[i])) {
-          usdIlsMap.set(usdIlsResult.dates[i], usdIlsResult.prices[i]);
+    let fxSource = '';
+    for (const fxTicker of USDILS_TICKERS) {
+      const fxResult = await fetchHistory(fxTicker, periodStart);
+      if (fxResult && fxResult.dates.length > 0) {
+        const isInverse = fxTicker === 'ILSUSD=X'; // This gives ILS per 1 USD inverted
+        for (let i = 0; i < fxResult.dates.length; i++) {
+          const rate = fxResult.prices[i];
+          if (rate != null && !isNaN(rate) && rate > 0) {
+            // USDILS=X and ILS=X give ~3.5 (shekels per dollar)
+            // ILSUSD=X gives ~0.28 (dollars per shekel) — need to invert
+            usdIlsMap.set(fxResult.dates[i], isInverse ? (1 / rate) : rate);
+          }
         }
+        fxSource = fxTicker;
+        break; // Found working ticker
       }
     }
 
@@ -257,6 +265,8 @@ export async function GET(request: Request) {
       failedTickers,
       lastUpdated: new Date().toISOString(),
       startDate: INDEX_START,
+      fxSource: fxSource || 'none',
+      fxRatesCount: usdIlsMap.size,
     });
   } catch (error) {
     return NextResponse.json(
