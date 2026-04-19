@@ -27,7 +27,7 @@ function isRateLimited(ip: string): boolean {
 }
 
 // ── Yahoo Finance fetcher ──
-async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: string[]; prices: number[] } | null> {
+async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: string[]; opens: number[]; prices: number[] } | null> {
   try {
     const p1 = Math.floor(fromDate.getTime() / 1000);
     const p2 = Math.floor(Date.now() / 1000);
@@ -44,19 +44,22 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
     if (!result) return null;
 
     const timestamps: number[] = result.timestamp || [];
-    // Use regular close prices (not adjclose) — matches what Shlomi uses in his spreadsheet
-    const closes: number[] = result.indicators?.quote?.[0]?.close || [];
+    const quote = result.indicators?.quote?.[0];
+    const opens: number[] = quote?.open || [];
+    const closes: number[] = quote?.close || [];
     if (!timestamps.length || !closes.length) return null;
 
     const dates = timestamps.map((t: number) => new Date(t * 1000).toISOString().split('T')[0]);
-    return { dates, prices: closes };
+    return { dates, opens, prices: closes };
   } catch {
     return null;
   }
 }
 
 // ── Config ──
-const INDEX_START = '2026-04-05';
+// Base date: fetch from April 3 (Friday) to get opening prices as base
+// SA20 index display starts from April 6 but base prices are from April 3 open
+const INDEX_START = '2026-04-03';
 const BENCHMARKS = [
   { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
@@ -95,12 +98,15 @@ export async function GET(request: Request) {
       })),
     ]);
 
-    // ── Build FX rate map (date → USD/ILS rate) ──
+    // ── Build FX rate maps (date → USD/ILS rate) ──
     const fxMap = new Map<string, number>();
+    const fxOpenMap = new Map<string, number>();
     if (fxResult) {
       for (let i = 0; i < fxResult.dates.length; i++) {
         const r = fxResult.prices[i];
         if (r != null && !isNaN(r) && r > 0) fxMap.set(fxResult.dates[i], r);
+        const o = fxResult.opens[i];
+        if (o != null && !isNaN(o) && o > 0) fxOpenMap.set(fxResult.dates[i], o);
       }
     }
 
@@ -118,20 +124,21 @@ export async function GET(request: Request) {
     }
 
     // ── SA20 index ──
-    const stockHistories: Array<{ name: string; ticker: string; dates: string[]; prices: number[] }> = [];
+    const stockHistories: Array<{ name: string; ticker: string; dates: string[]; opens: number[]; prices: number[] }> = [];
     for (const r of stockResults) {
       if (r.status === 'fulfilled' && r.value.history) {
         stockHistories.push({ name: r.value.name, ticker: r.value.ticker, ...r.value.history });
       }
     }
 
-    // Build per-stock price maps with base price
+    // Build per-stock price maps with base price (OPENING price of first trading day)
     const stockMaps = stockHistories.map((sh) => {
       const map = new Map<string, number>();
       for (let i = 0; i < sh.dates.length; i++) {
         if (sh.prices[i] != null && !isNaN(sh.prices[i])) map.set(sh.dates[i], sh.prices[i]);
       }
-      const basePrice = sh.prices.find((p) => p != null && !isNaN(p) && p > 0) || 0;
+      // Use OPENING price of the first trading day as base
+      const basePrice = sh.opens.find((p) => p != null && !isNaN(p) && p > 0) || 0;
       return { name: sh.name, ticker: sh.ticker, map, basePrice };
     });
 
@@ -142,8 +149,11 @@ export async function GET(request: Request) {
     const allDates = Array.from(allDatesSet).sort();
 
     // SA20: equal-weight average % change, base 1000
+    // Display starts from April 6 even though base prices are from April 3 open
+    const SA20_DISPLAY_START = '2026-04-06';
     const sa20Series: Array<{ date: string; value: number }> = [];
     for (const date of allDates) {
+      if (date < SA20_DISPLAY_START) continue; // Skip pre-launch dates
       let totalPct = 0, count = 0;
       for (const sm of stockMaps) {
         if (sm.basePrice <= 0) continue;
@@ -169,22 +179,35 @@ export async function GET(request: Request) {
 
       const { dates, prices } = br.history;
 
-      // Find the first valid price AND its corresponding date
+      const { opens } = br.history;
+
+      // Find the first valid OPENING price as base (matches Shlomi's methodology)
       let baseIdx = -1;
-      for (let i = 0; i < prices.length; i++) {
-        if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
+      for (let i = 0; i < opens.length; i++) {
+        if (opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
           baseIdx = i;
           break;
         }
       }
       if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      const basePrice = prices[baseIdx];
+      const basePrice = opens[baseIdx];
       const baseDate = dates[baseIdx];
 
-      const needsFx = br.currency === 'USD' && fxMap.size > 0;
-      // Get FX rate on the SAME date as the base price (not dates[0] which might differ)
-      const baseFx = needsFx ? getFx(baseDate) : null;
+      const needsFx = br.currency === 'USD' && fxOpenMap.size > 0;
+      // Get FX OPENING rate on the SAME date as the base price
+      function getOpenFx(date: string): number | null {
+        const exact = fxOpenMap.get(date);
+        if (exact) return exact;
+        const d = new Date(date);
+        for (let i = 1; i <= 7; i++) {
+          d.setDate(d.getDate() - 1);
+          const r = fxOpenMap.get(d.toISOString().split('T')[0]);
+          if (r) return r;
+        }
+        return null;
+      }
+      const baseFx = needsFx ? getOpenFx(baseDate) : null;
 
       // Find last valid price for debug
       let lastIdx = -1;
