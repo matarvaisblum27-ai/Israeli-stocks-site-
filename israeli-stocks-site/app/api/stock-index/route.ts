@@ -133,24 +133,37 @@ export async function GET(request: Request) {
     }
 
     // Build per-stock price maps with base price
-    // Use OPENING price of last trading day BEFORE SA20 launch (April 6)
+    // Use OPENING price ON April 6 (SA20 launch day — TASE trades on Sundays)
+    // This matches Shlomi's "שער השקת מדד 06/04/26" column
     const stockMaps = stockHistories.map((sh) => {
       const map = new Map<string, number>();
       for (let i = 0; i < sh.dates.length; i++) {
         if (sh.prices[i] != null && !isNaN(sh.prices[i])) map.set(sh.dates[i], sh.prices[i]);
       }
-      // Find last pre-launch open price
+
+      // 1st priority: opening price ON April 6 (the launch date itself)
       let basePrice = 0;
-      for (let i = sh.dates.length - 1; i >= 0; i--) {
-        if (sh.dates[i] < SA20_LAUNCH && sh.opens[i] != null && !isNaN(sh.opens[i]) && sh.opens[i] > 0) {
+      let baseDateUsed = '';
+      for (let i = 0; i < sh.dates.length; i++) {
+        if (sh.dates[i] === SA20_LAUNCH && sh.opens[i] != null && !isNaN(sh.opens[i]) && sh.opens[i] > 0) {
           basePrice = sh.opens[i];
+          baseDateUsed = sh.dates[i];
           break;
         }
       }
-      // Fallback to first available open
+      // 2nd priority: closing price on last trading day before April 6
       if (basePrice === 0) {
-        basePrice = sh.opens.find((p) => p != null && !isNaN(p) && p > 0) || 0;
+        for (let i = sh.dates.length - 1; i >= 0; i--) {
+          if (sh.dates[i] < SA20_LAUNCH && sh.prices[i] != null && !isNaN(sh.prices[i]) && sh.prices[i] > 0) {
+            basePrice = sh.prices[i];
+            baseDateUsed = sh.dates[i];
+            break;
+          }
+        }
       }
+
+      console.log(`[SA20] ${sh.name} (${sh.ticker}): basePrice=${basePrice} on ${baseDateUsed}, latestPrice=${sh.prices[sh.prices.length - 1]} on ${sh.dates[sh.dates.length - 1]}, return=${basePrice > 0 ? (((sh.prices[sh.prices.length - 1] / basePrice) - 1) * 100).toFixed(2) : 'N/A'}%`);
+
       return { name: sh.name, ticker: sh.ticker, map, basePrice };
     });
 
@@ -188,19 +201,34 @@ export async function GET(request: Request) {
     const benchmarkSeries = benchmarkResults.map((br) => {
       if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      const { dates, prices } = br.history;
+      const { dates, prices, opens } = br.history;
 
-      // Find the CLOSING price of the LAST trading day BEFORE SA20 launch (April 6)
-      // This matches Shlomi's methodology (Google Finance returns close for past dates)
-      // TASE: April 3 close, US: April 2 close (Good Friday closed April 3)
+      // For TASE benchmarks (TA-125): use opening price ON April 6 (TASE trades Sundays)
+      // For US benchmarks (S&P, Nasdaq, MSCI): use closing price of last trading day before April 6
+      const isTASE = br.ticker.endsWith('.TA');
+
       let baseIdx = -1;
-      for (let i = dates.length - 1; i >= 0; i--) {
-        if (dates[i] < SA20_LAUNCH && prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
-          baseIdx = i;
-          break;
+
+      if (isTASE) {
+        // 1st: opening price ON April 6
+        for (let i = 0; i < dates.length; i++) {
+          if (dates[i] === SA20_LAUNCH && opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
+            baseIdx = i;
+            break;
+          }
         }
       }
-      // Fallback: if no pre-launch data, use first available close
+
+      // For US indices, or fallback for TASE: closing price of last day before April 6
+      if (baseIdx < 0) {
+        for (let i = dates.length - 1; i >= 0; i--) {
+          if (dates[i] < SA20_LAUNCH && prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
+            baseIdx = i;
+            break;
+          }
+        }
+      }
+      // Final fallback
       if (baseIdx < 0) {
         for (let i = 0; i < prices.length; i++) {
           if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
@@ -211,7 +239,8 @@ export async function GET(request: Request) {
       }
       if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      const basePrice = prices[baseIdx];
+      // TASE uses opening price on April 6, US uses closing price before April 6
+      const basePrice = (isTASE && dates[baseIdx] === SA20_LAUNCH) ? opens[baseIdx] : prices[baseIdx];
       const baseDate = dates[baseIdx];
 
       const needsFx = br.currency === 'USD';
