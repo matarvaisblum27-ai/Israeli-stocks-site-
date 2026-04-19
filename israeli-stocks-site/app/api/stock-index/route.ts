@@ -56,7 +56,7 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
 }
 
 // ── Config ──
-const INDEX_START = '2026-04-06';
+const INDEX_START = '2026-04-05';
 const BENCHMARKS = [
   { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
