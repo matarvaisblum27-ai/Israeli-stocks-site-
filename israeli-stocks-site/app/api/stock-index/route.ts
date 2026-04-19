@@ -303,6 +303,23 @@ export async function GET(request: Request) {
       (s) => !successTickers.has(s.ticker)
     ).map((s) => ({ name: s.name, ticker: s.ticker }));
 
+    // ── Debug: verify FX is applied to benchmarks ──
+    const benchmarkDebug: Record<string, unknown> = {};
+    for (const bs of benchmarkSeries) {
+      const lastPoint = bs.data[bs.data.length - 1];
+      const cfg = BENCHMARKS.find((b) => b.ticker === bs.ticker);
+      benchmarkDebug[bs.name] = {
+        dataPoints: bs.data.length,
+        lastValue: lastPoint?.value || null,
+        lastDate: lastPoint?.date || null,
+        staticBasePrice: cfg?.basePrice || 'fallback',
+        currency: cfg?.currency || '?',
+        fxApplied: cfg?.currency === 'USD',
+        staticBaseFx: cfg?.currency === 'USD' ? BASE_EXCHANGE_RATES.USD_ILS : 'N/A',
+        liveFxLatest: cfg?.currency === 'USD' ? getFx(allDates[allDates.length - 1]) : 'N/A',
+      };
+    }
+
     // ── Response ──
     return NextResponse.json({
       sa20: sa20Series,
@@ -316,6 +333,8 @@ export async function GET(request: Request) {
       fxRatesCount: fxMap.size,
       liveFxRate: getFx(allDates[allDates.length - 1]),
       staticBaseFx: BASE_EXCHANGE_RATES.USD_ILS,
+      benchmarkDebug,
+      _version: 'refactor-static-config-v2',
     });
   } catch (error) {
     return NextResponse.json(
