@@ -62,8 +62,8 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
 // US last trading day before April 6 = April 2 (Thursday, Good Friday closed)
 const INDEX_START = '2026-04-02';
 const SA20_LAUNCH = '2026-04-06';
-// Hardcoded fallback base FX rate (USD/ILS on April 2, 2026) — confirmed by user
-const FALLBACK_BASE_FX = 3.14;
+// Hardcoded fallback base FX rate (USD/ILS on SA20 launch April 6, 2026) — from Shlomi's spreadsheet
+const FALLBACK_BASE_FX = 3.130375;
 const BENCHMARKS = [
   { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
@@ -190,21 +190,20 @@ export async function GET(request: Request) {
 
       const { dates, prices } = br.history;
 
-      const { opens } = br.history;
-
-      // Find the OPENING price of the LAST trading day BEFORE SA20 launch (April 6)
-      // This is April 3 for TASE, April 2 for US markets (Good Friday)
+      // Find the CLOSING price of the LAST trading day BEFORE SA20 launch (April 6)
+      // This matches Shlomi's methodology (Google Finance returns close for past dates)
+      // TASE: April 3 close, US: April 2 close (Good Friday closed April 3)
       let baseIdx = -1;
       for (let i = dates.length - 1; i >= 0; i--) {
-        if (dates[i] < SA20_LAUNCH && opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
+        if (dates[i] < SA20_LAUNCH && prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
           baseIdx = i;
           break;
         }
       }
-      // Fallback: if no pre-launch data, use first available open
+      // Fallback: if no pre-launch data, use first available close
       if (baseIdx < 0) {
-        for (let i = 0; i < opens.length; i++) {
-          if (opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
+        for (let i = 0; i < prices.length; i++) {
+          if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
             baseIdx = i;
             break;
           }
@@ -212,13 +211,13 @@ export async function GET(request: Request) {
       }
       if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      const basePrice = opens[baseIdx];
+      const basePrice = prices[baseIdx];
       const baseDate = dates[baseIdx];
 
       const needsFx = br.currency === 'USD';
-      // Use CLOSING FX rates consistently for both base and daily
-      // getFx already handles nearest-date fallback from fxMap (closing rates)
-      const baseFx = needsFx ? (getFx(baseDate) || FALLBACK_BASE_FX) : null;
+      // FX base: use the rate closest to SA20 launch date (April 6), NOT the benchmark's base date
+      // This ensures FX conversion measures currency change from the same starting point
+      const baseFx = needsFx ? (getFx(SA20_LAUNCH) || getFx(baseDate) || FALLBACK_BASE_FX) : null;
 
       // Find last valid price for debug
       let lastIdx = -1;
@@ -236,14 +235,17 @@ export async function GET(request: Request) {
       benchmarkDebug[br.name] = {
         baseDate,
         basePrice: Math.round(basePrice * 100) / 100,
+        basePriceType: 'close',
         lastDate,
         lastPrice: Math.round(lastPrice * 100) / 100,
         indexChangePct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
         ...(needsFx ? {
           baseFx: baseFx ? Math.round(baseFx * 10000) / 10000 : null,
+          baseFxSource: getFx(SA20_LAUNCH) ? 'SA20_LAUNCH' : getFx(baseDate) ? 'baseDate' : 'FALLBACK',
           lastFx: lastFx ? Math.round(lastFx * 10000) / 10000 : null,
           fxChangePct: baseFx && lastFx ? Math.round(((lastFx / baseFx) - 1) * 10000) / 100 : null,
           ilsReturnPct: baseFx && lastFx ? Math.round(((lastPrice / basePrice) * (lastFx / baseFx) - 1) * 10000) / 100 : null,
+          shlomiExpected: br.name === 'S&P 500' ? '-3.22%' : undefined,
         } : {
           returnPct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
         }),
