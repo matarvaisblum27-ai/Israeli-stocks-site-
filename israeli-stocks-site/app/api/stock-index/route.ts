@@ -241,26 +241,53 @@ export async function GET(request: Request) {
     }
 
     // ── Benchmark series (with USD→ILS conversion where needed) ──
+    const conversionDebug: Array<{ name: string; currency: string; needsConversion: boolean; fxMapSize: number; rawFirst: number | null; rawLast: number | null; convertedFirst: number | null; convertedLast: number | null; rateFirst: number | null; rateLast: number | null; dateFirst: string | null; dateLast: string | null }> = [];
+
     const benchmarkSeries = benchmarkResults.map((br) => {
       if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
-      const needsConversion = br.currency === 'USD' && usdIlsMap.size > 0;
 
-      // Convert prices to ILS if needed
-      let prices = br.history.prices;
-      let dates = br.history.dates;
+      const currency = br.currency || 'unknown';
+      const needsConversion = currency === 'USD' && usdIlsMap.size > 0;
+
+      const rawDates = br.history.dates;
+      const rawPrices = br.history.prices;
+
+      let dates = rawDates;
+      let prices = rawPrices;
+
+      const debugEntry: typeof conversionDebug[0] = {
+        name: br.name,
+        currency,
+        needsConversion,
+        fxMapSize: usdIlsMap.size,
+        rawFirst: rawPrices[0] ?? null,
+        rawLast: rawPrices[rawPrices.length - 1] ?? null,
+        convertedFirst: null,
+        convertedLast: null,
+        rateFirst: rawDates[0] ? (usdIlsMap.get(rawDates[0]) ?? null) : null,
+        rateLast: rawDates[rawDates.length - 1] ? (usdIlsMap.get(rawDates[rawDates.length - 1]) ?? null) : null,
+        dateFirst: rawDates[0] ?? null,
+        dateLast: rawDates[rawDates.length - 1] ?? null,
+      };
+
       if (needsConversion) {
-        const converted: { dates: string[]; prices: number[] } = { dates: [], prices: [] };
-        for (let i = 0; i < dates.length; i++) {
-          const p = prices[i];
-          const rate = usdIlsMap.get(dates[i]);
+        const convDates: string[] = [];
+        const convPrices: number[] = [];
+        for (let i = 0; i < rawDates.length; i++) {
+          const p = rawPrices[i];
+          const rate = usdIlsMap.get(rawDates[i]);
           if (p != null && !isNaN(p) && rate != null) {
-            converted.dates.push(dates[i]);
-            converted.prices.push(p * rate);
+            convDates.push(rawDates[i]);
+            convPrices.push(p * rate);
           }
         }
-        dates = converted.dates;
-        prices = converted.prices;
+        dates = convDates;
+        prices = convPrices;
+        debugEntry.convertedFirst = convPrices[0] ?? null;
+        debugEntry.convertedLast = convPrices[convPrices.length - 1] ?? null;
       }
+
+      conversionDebug.push(debugEntry);
 
       const basePrice = prices.find((p: number) => p != null && !isNaN(p) && p > 0);
       if (!basePrice) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
@@ -311,6 +338,7 @@ export async function GET(request: Request) {
       fxSource: fxSource || 'none',
       fxRatesCount: usdIlsMap.size,
       fxRates: Object.fromEntries(usdIlsMap),
+      conversionDebug,
     });
   } catch (error) {
     return NextResponse.json(
