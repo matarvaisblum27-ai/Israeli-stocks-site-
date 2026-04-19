@@ -310,6 +310,7 @@ export async function GET(request: Request) {
       startDate: INDEX_START,
       fxSource: fxSource || 'none',
       fxRatesCount: usdIlsMap.size,
+      fxRates: Object.fromEntries(usdIlsMap),
     });
   } catch (error) {
     return NextResponse.json(
