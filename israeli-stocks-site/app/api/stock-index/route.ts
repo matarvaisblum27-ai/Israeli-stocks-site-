@@ -48,8 +48,62 @@ const BENCHMARKS = [
   { name: 'MSCI World', ticker: 'URTH', color: '#f472b6', currency: 'USD' },
 ];
 
-/* USD/ILS tickers for currency adjustment (try multiple in case one fails) */
-const USDILS_TICKERS = ['USDILS=X', 'ILS=X', 'ILSUSD=X'];
+/* ── USD/ILS exchange rate fetching ── */
+
+// Fetch daily USD/ILS rates from Bank of Israel official API
+async function fetchBoiRates(startDate: string): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const url = `https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STAT/EXR/1.0/RER_USD_ILS?startperiod=${startDate}&endperiod=${today}&format=sdmx-json`;
+    const res = await fetch(url, {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 14400 },
+    });
+    if (!res.ok) return map;
+    const data = await res.json();
+
+    // SDMX-JSON structure: data.dataSets[0].series["0:0:0:0"].observations
+    const series = data?.data?.dataSets?.[0]?.series;
+    const timePeriods = data?.data?.structure?.dimensions?.observation?.[0]?.values;
+
+    if (series && timePeriods) {
+      const seriesKey = Object.keys(series)[0];
+      const obs = series[seriesKey]?.observations;
+      if (obs) {
+        for (const [idx, values] of Object.entries(obs)) {
+          const period = timePeriods[parseInt(idx)]?.id; // "2026-04-06" format
+          const rate = (values as number[])[0];
+          if (period && rate && !isNaN(rate)) {
+            map.set(period, rate);
+          }
+        }
+      }
+    }
+  } catch {
+    // BOI failed, will try Yahoo fallback
+  }
+  return map;
+}
+
+// Yahoo Finance forex fallback
+async function fetchYahooFxRates(periodStart: Date): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  const tickers = ['USDILS=X', 'ILS=X'];
+  for (const ticker of tickers) {
+    const result = await fetchHistory(ticker, periodStart);
+    if (result && result.dates.length > 0) {
+      for (let i = 0; i < result.dates.length; i++) {
+        const rate = result.prices[i];
+        if (rate != null && !isNaN(rate) && rate > 0) {
+          map.set(result.dates[i], rate);
+        }
+      }
+      break;
+    }
+  }
+  return map;
+}
 
 /* Index inception date: April 6, 2026 */
 const INDEX_START = '2026-04-06';
@@ -129,24 +183,13 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    // Fetch USD/ILS exchange rate — try multiple tickers
-    const usdIlsMap = new Map<string, number>();
-    let fxSource = '';
-    for (const fxTicker of USDILS_TICKERS) {
-      const fxResult = await fetchHistory(fxTicker, periodStart);
-      if (fxResult && fxResult.dates.length > 0) {
-        const isInverse = fxTicker === 'ILSUSD=X'; // This gives ILS per 1 USD inverted
-        for (let i = 0; i < fxResult.dates.length; i++) {
-          const rate = fxResult.prices[i];
-          if (rate != null && !isNaN(rate) && rate > 0) {
-            // USDILS=X and ILS=X give ~3.5 (shekels per dollar)
-            // ILSUSD=X gives ~0.28 (dollars per shekel) — need to invert
-            usdIlsMap.set(fxResult.dates[i], isInverse ? (1 / rate) : rate);
-          }
-        }
-        fxSource = fxTicker;
-        break; // Found working ticker
-      }
+    // Fetch USD/ILS exchange rate — Bank of Israel first, Yahoo fallback
+    let usdIlsMap = await fetchBoiRates(INDEX_START);
+    let fxSource = usdIlsMap.size > 0 ? 'bank-of-israel' : '';
+
+    if (usdIlsMap.size === 0) {
+      usdIlsMap = await fetchYahooFxRates(periodStart);
+      fxSource = usdIlsMap.size > 0 ? 'yahoo-finance' : 'none';
     }
 
     // ── SA20 index calculation ──
