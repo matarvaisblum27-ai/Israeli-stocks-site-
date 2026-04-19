@@ -242,8 +242,6 @@ export async function GET(request: Request) {
     }
 
     // ── Benchmark series (with USD→ILS conversion where needed) ──
-    const conversionDebug: Array<{ name: string; currency: string; needsConversion: boolean; fxMapSize: number; rawFirst: number | null; rawLast: number | null; convertedFirst: number | null; convertedLast: number | null; rateFirst: number | null; rateLast: number | null; dateFirst: string | null; dateLast: string | null }> = [];
-
     const benchmarkSeries = benchmarkResults.map((br) => {
       if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
@@ -255,21 +253,6 @@ export async function GET(request: Request) {
 
       let dates = rawDates;
       let prices = rawPrices;
-
-      const debugEntry: typeof conversionDebug[0] = {
-        name: br.name,
-        currency,
-        needsConversion,
-        fxMapSize: usdIlsMap.size,
-        rawFirst: rawPrices[0] ?? null,
-        rawLast: rawPrices[rawPrices.length - 1] ?? null,
-        convertedFirst: null,
-        convertedLast: null,
-        rateFirst: rawDates[0] ? (usdIlsMap.get(rawDates[0]) ?? null) : null,
-        rateLast: rawDates[rawDates.length - 1] ? (usdIlsMap.get(rawDates[rawDates.length - 1]) ?? null) : null,
-        dateFirst: rawDates[0] ?? null,
-        dateLast: rawDates[rawDates.length - 1] ?? null,
-      };
 
       if (needsConversion) {
         const convDates: string[] = [];
@@ -284,11 +267,7 @@ export async function GET(request: Request) {
         }
         dates = convDates;
         prices = convPrices;
-        debugEntry.convertedFirst = convPrices[0] ?? null;
-        debugEntry.convertedLast = convPrices[convPrices.length - 1] ?? null;
       }
-
-      conversionDebug.push(debugEntry);
 
       const basePrice = prices.find((p: number) => p != null && !isNaN(p) && p > 0);
       if (!basePrice) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
@@ -338,8 +317,6 @@ export async function GET(request: Request) {
       startDate: INDEX_START,
       fxSource: fxSource || 'none',
       fxRatesCount: usdIlsMap.size,
-      fxRates: Object.fromEntries(usdIlsMap),
-      conversionDebug,
     });
   } catch (error) {
     return NextResponse.json(
