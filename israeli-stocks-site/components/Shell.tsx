@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Category, Company, InterestingEntry } from '@/lib/supabase';
 import CompanyCard from './CompanyCard';
+import SA20Chart from './SA20Chart';
 import { sanitizeHtml } from '@/lib/sanitize';
 
 const YEARS = ['2026', '2025', '2024'];
@@ -303,7 +304,10 @@ function StocksPage({
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
         {view.type === 'intro' && intro && (
-          <IntroView intro={intro} />
+          <>
+            <IntroView intro={intro} />
+            <SA20Chart />
+          </>
         )}
 
         {view.type === 'cat' && !loading && (
