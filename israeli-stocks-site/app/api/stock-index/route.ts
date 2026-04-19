@@ -44,7 +44,8 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
     if (!result) return null;
 
     const timestamps: number[] = result.timestamp || [];
-    const closes: number[] = result.indicators?.adjclose?.[0]?.adjclose || [];
+    // Use regular close prices (not adjclose) — matches what Shlomi uses in his spreadsheet
+    const closes: number[] = result.indicators?.quote?.[0]?.close || [];
     if (!timestamps.length || !closes.length) return null;
 
     const dates = timestamps.map((t: number) => new Date(t * 1000).toISOString().split('T')[0]);
@@ -162,16 +163,58 @@ export async function GET(request: Request) {
     // Formula: ILS_return = (index_today/index_base) × (fx_today/fx_base) - 1
     // This correctly combines the index % change with the currency % change
 
+    const benchmarkDebug: Record<string, unknown> = {};
     const benchmarkSeries = benchmarkResults.map((br) => {
       if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
       const { dates, prices } = br.history;
-      const basePrice = prices.find((p: number) => p != null && !isNaN(p) && p > 0);
-      if (!basePrice) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
+
+      // Find the first valid price AND its corresponding date
+      let baseIdx = -1;
+      for (let i = 0; i < prices.length; i++) {
+        if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
+          baseIdx = i;
+          break;
+        }
+      }
+      if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
+
+      const basePrice = prices[baseIdx];
+      const baseDate = dates[baseIdx];
 
       const needsFx = br.currency === 'USD' && fxMap.size > 0;
-      // Get the FX rate on the index inception date
-      const baseFx = needsFx ? getFx(dates[0]) : null;
+      // Get FX rate on the SAME date as the base price (not dates[0] which might differ)
+      const baseFx = needsFx ? getFx(baseDate) : null;
+
+      // Find last valid price for debug
+      let lastIdx = -1;
+      for (let i = prices.length - 1; i >= 0; i--) {
+        if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
+          lastIdx = i;
+          break;
+        }
+      }
+      const lastPrice = lastIdx >= 0 ? prices[lastIdx] : basePrice;
+      const lastDate = lastIdx >= 0 ? dates[lastIdx] : baseDate;
+      const lastFx = needsFx ? getFx(lastDate) : null;
+
+      // Debug info per benchmark
+      benchmarkDebug[br.name] = {
+        baseDate,
+        basePrice: Math.round(basePrice * 100) / 100,
+        lastDate,
+        lastPrice: Math.round(lastPrice * 100) / 100,
+        indexChangePct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
+        ...(needsFx ? {
+          baseFx: baseFx ? Math.round(baseFx * 10000) / 10000 : null,
+          lastFx: lastFx ? Math.round(lastFx * 10000) / 10000 : null,
+          fxChangePct: baseFx && lastFx ? Math.round(((lastFx / baseFx) - 1) * 10000) / 100 : null,
+          ilsReturnPct: baseFx && lastFx ? Math.round(((lastPrice / basePrice) * (lastFx / baseFx) - 1) * 10000) / 100 : null,
+        } : {
+          returnPct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
+        }),
+        totalDataPoints: dates.length,
+      };
 
       const data: Array<{ date: string; value: number }> = [];
       for (let i = 0; i < dates.length; i++) {
@@ -220,6 +263,7 @@ export async function GET(request: Request) {
       fxRatesCount: fxMap.size,
       baseFxRate: getFx(allDates[0]),
       latestFxRate: getFx(allDates[allDates.length - 1]),
+      benchmarkDebug,
     });
   } catch (error) {
     return NextResponse.json(
