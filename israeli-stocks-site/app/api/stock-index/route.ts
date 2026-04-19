@@ -57,9 +57,11 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
 }
 
 // ── Config ──
-// Base date: fetch from April 3 (Friday) to get opening prices as base
-// SA20 index display starts from April 6 but base prices are from April 3 open
-const INDEX_START = '2026-04-03';
+// Fetch from April 2 to get the last trading day before SA20 launch (April 6)
+// TASE last trading day before April 6 = April 3 (Friday, Good Friday but TASE open)
+// US last trading day before April 6 = April 2 (Thursday, Good Friday closed)
+const INDEX_START = '2026-04-02';
+const SA20_LAUNCH = '2026-04-06';
 const BENCHMARKS = [
   { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
@@ -131,14 +133,25 @@ export async function GET(request: Request) {
       }
     }
 
-    // Build per-stock price maps with base price (OPENING price of first trading day)
+    // Build per-stock price maps with base price
+    // Use OPENING price of last trading day BEFORE SA20 launch (April 6)
     const stockMaps = stockHistories.map((sh) => {
       const map = new Map<string, number>();
       for (let i = 0; i < sh.dates.length; i++) {
         if (sh.prices[i] != null && !isNaN(sh.prices[i])) map.set(sh.dates[i], sh.prices[i]);
       }
-      // Use OPENING price of the first trading day as base
-      const basePrice = sh.opens.find((p) => p != null && !isNaN(p) && p > 0) || 0;
+      // Find last pre-launch open price
+      let basePrice = 0;
+      for (let i = sh.dates.length - 1; i >= 0; i--) {
+        if (sh.dates[i] < SA20_LAUNCH && sh.opens[i] != null && !isNaN(sh.opens[i]) && sh.opens[i] > 0) {
+          basePrice = sh.opens[i];
+          break;
+        }
+      }
+      // Fallback to first available open
+      if (basePrice === 0) {
+        basePrice = sh.opens.find((p) => p != null && !isNaN(p) && p > 0) || 0;
+      }
       return { name: sh.name, ticker: sh.ticker, map, basePrice };
     });
 
@@ -149,11 +162,10 @@ export async function GET(request: Request) {
     const allDates = Array.from(allDatesSet).sort();
 
     // SA20: equal-weight average % change, base 1000
-    // Display starts from April 6 even though base prices are from April 3 open
-    const SA20_DISPLAY_START = '2026-04-06';
+    // Display starts from April 6 even though base prices are from pre-launch
     const sa20Series: Array<{ date: string; value: number }> = [];
     for (const date of allDates) {
-      if (date < SA20_DISPLAY_START) continue; // Skip pre-launch dates
+      if (date < SA20_LAUNCH) continue; // Skip pre-launch dates
       let totalPct = 0, count = 0;
       for (const sm of stockMaps) {
         if (sm.basePrice <= 0) continue;
@@ -181,12 +193,22 @@ export async function GET(request: Request) {
 
       const { opens } = br.history;
 
-      // Find the first valid OPENING price as base (matches Shlomi's methodology)
+      // Find the OPENING price of the LAST trading day BEFORE SA20 launch (April 6)
+      // This is April 3 for TASE, April 2 for US markets (Good Friday)
       let baseIdx = -1;
-      for (let i = 0; i < opens.length; i++) {
-        if (opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
+      for (let i = dates.length - 1; i >= 0; i--) {
+        if (dates[i] < SA20_LAUNCH && opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
           baseIdx = i;
           break;
+        }
+      }
+      // Fallback: if no pre-launch data, use first available open
+      if (baseIdx < 0) {
+        for (let i = 0; i < opens.length; i++) {
+          if (opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
+            baseIdx = i;
+            break;
+          }
         }
       }
       if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
@@ -241,6 +263,7 @@ export async function GET(request: Request) {
 
       const data: Array<{ date: string; value: number }> = [];
       for (let i = 0; i < dates.length; i++) {
+        if (dates[i] < SA20_LAUNCH) continue; // Skip pre-launch dates
         const p = prices[i];
         if (p == null || isNaN(p)) continue;
 
