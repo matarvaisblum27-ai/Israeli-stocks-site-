@@ -40,13 +40,16 @@ interface YahooChartResult {
   };
 }
 
-/* Benchmark indices */
+/* Benchmark indices — currency: 'USD' means we need to convert to ILS */
 const BENCHMARKS = [
-  { name: 'ת"א 125', ticker: '^TA125.TA', color: '#60a5fa' },
-  { name: 'S&P 500', ticker: '^GSPC', color: '#f59e0b' },
-  { name: 'NASDAQ', ticker: '^IXIC', color: '#a78bfa' },
-  { name: 'MSCI World', ticker: 'URTH', color: '#f472b6' },
+  { name: 'ת"א 125', ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
+  { name: 'S&P 500', ticker: '^GSPC', color: '#f59e0b', currency: 'USD' },
+  { name: 'NASDAQ', ticker: '^IXIC', color: '#a78bfa', currency: 'USD' },
+  { name: 'MSCI World', ticker: 'URTH', color: '#f472b6', currency: 'USD' },
 ];
+
+/* USD/ILS ticker for currency adjustment */
+const USDILS_TICKER = 'USDILS=X';
 
 /* Index inception date: April 6, 2026 */
 const INDEX_START = '2026-04-06';
@@ -110,8 +113,8 @@ export async function GET(request: Request) {
     const tickerData = loadTickerData();
     const stocks = tickerData.stocks;
 
-    // Fetch all stock histories + benchmarks in parallel
-    const [stockResults, ...benchmarkResults] = await Promise.all([
+    // Fetch all stock histories + benchmarks + USD/ILS in parallel
+    const [stockResults, usdIlsResult, ...benchmarkResults] = await Promise.all([
       // SA20 stocks
       Promise.allSettled(
         stocks.map(async (stock: { name: string; ticker: string }) => {
@@ -119,12 +122,24 @@ export async function GET(request: Request) {
           return { name: stock.name, ticker: stock.ticker, history };
         })
       ),
+      // USD/ILS exchange rate
+      fetchHistory(USDILS_TICKER, periodStart),
       // Benchmarks
       ...BENCHMARKS.map(async (b) => {
         const history = await fetchHistory(b.ticker, periodStart);
-        return { name: b.name, ticker: b.ticker, color: b.color, history };
+        return { name: b.name, ticker: b.ticker, color: b.color, currency: b.currency, history };
       }),
     ]);
+
+    // Build USD/ILS rate map (date → rate)
+    const usdIlsMap = new Map<string, number>();
+    if (usdIlsResult) {
+      for (let i = 0; i < usdIlsResult.dates.length; i++) {
+        if (usdIlsResult.prices[i] != null && !isNaN(usdIlsResult.prices[i])) {
+          usdIlsMap.set(usdIlsResult.dates[i], usdIlsResult.prices[i]);
+        }
+      }
+    }
 
     // ── SA20 index calculation ──
     const stockHistories: Array<{ name: string; ticker: string; dates: string[]; prices: number[] }> = [];
@@ -174,19 +189,38 @@ export async function GET(request: Request) {
       }
     }
 
-    // ── Benchmark series ──
+    // ── Benchmark series (with USD→ILS conversion where needed) ──
     const benchmarkSeries = benchmarkResults.map((br) => {
       if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
-      const basePrice = br.history.prices.find((p: number) => p != null && !isNaN(p) && p > 0);
+      const needsConversion = br.currency === 'USD' && usdIlsMap.size > 0;
+
+      // Convert prices to ILS if needed
+      let prices = br.history.prices;
+      let dates = br.history.dates;
+      if (needsConversion) {
+        const converted: { dates: string[]; prices: number[] } = { dates: [], prices: [] };
+        for (let i = 0; i < dates.length; i++) {
+          const p = prices[i];
+          const rate = usdIlsMap.get(dates[i]);
+          if (p != null && !isNaN(p) && rate != null) {
+            converted.dates.push(dates[i]);
+            converted.prices.push(p * rate);
+          }
+        }
+        dates = converted.dates;
+        prices = converted.prices;
+      }
+
+      const basePrice = prices.find((p: number) => p != null && !isNaN(p) && p > 0);
       if (!basePrice) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
       const data: Array<{ date: string; value: number }> = [];
-      for (let i = 0; i < br.history.dates.length; i++) {
-        const p = br.history.prices[i];
+      for (let i = 0; i < dates.length; i++) {
+        const p = prices[i];
         if (p != null && !isNaN(p)) {
           const pctChange = ((p - basePrice) / basePrice) * 100;
           data.push({
-            date: br.history.dates[i],
+            date: dates[i],
             value: Math.round((1000 * (1 + pctChange / 100)) * 10) / 10,
           });
         }

@@ -412,7 +412,7 @@ function SA20Chart() {
             📈 מדד SA20
           </h2>
           <p className="text-muted text-xs mt-0.5">
-            {data ? `${data.stockCount} מניות מעניינות 2026 לעומת מדדי ייחוס` : 'טוען...'}
+            {data ? `${data.stockCount} מניות מעניינות 2026 לעומת מדדי ייחוס (בשקלים)` : 'טוען...'}
           </p>
         </div>
         <div className="text-muted text-xs">
