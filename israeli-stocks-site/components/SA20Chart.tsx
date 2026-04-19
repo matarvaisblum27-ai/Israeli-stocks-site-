@@ -32,7 +32,7 @@ export default function SA20Chart() {
   const [data, setData] = useState<SA20Response | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<string | null>(null); // null = show all
   const [tooltip, setTooltip] = useState<{ idx: number } | null>(null);
   const [stocksOpen, setStocksOpen] = useState(false);
 
@@ -63,12 +63,17 @@ export default function SA20Chart() {
     return all;
   }, [data]);
 
-  /* Chart bounds */
+  /* Which series are visible */
+  const visible = useMemo(() => {
+    if (selected === null) return series;
+    return series.filter((s) => s.name === selected);
+  }, [series, selected]);
+
+  /* Chart bounds — based on visible series only */
   const { dates, yMin, yMax } = useMemo(() => {
     const dateSet = new Set<string>();
     let min = Infinity, max = -Infinity;
-    for (const s of series) {
-      if (hidden.has(s.name)) continue;
+    for (const s of visible) {
       for (const p of s.points) {
         dateSet.add(p.date);
         if (p.pct < min) min = p.pct;
@@ -78,7 +83,7 @@ export default function SA20Chart() {
     const sorted = Array.from(dateSet).sort();
     const pad = Math.max((max - min) * 0.15, 1);
     return { dates: sorted, yMin: min - pad, yMax: max + pad };
-  }, [series, hidden]);
+  }, [visible]);
 
   const plotW = CHART_W - PAD.left - PAD.right;
   const plotH = CHART_H - PAD.top - PAD.bottom;
@@ -91,12 +96,8 @@ export default function SA20Chart() {
   function yPos(pct: number) {
     return PAD.top + (1 - (pct - yMin) / (yMax - yMin)) * plotH;
   }
-  function toggleSeries(name: string) {
-    setHidden((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name); else next.add(name);
-      return next;
-    });
+  function handleLegendClick(name: string) {
+    setSelected((prev) => (prev === name ? null : name));
   }
 
   /* Y-axis ticks */
@@ -117,7 +118,7 @@ export default function SA20Chart() {
   }
 
   function latest(s: typeof series[0]) {
-    return s.points.length > 0 ? s.points[s.points.length - 1] : { value: 1000, pct: 0 };
+    return s.points.length > 0 ? s.points[s.points.length - 1] : { value: 1000, pct: 0, date: '' };
   }
 
   if (loading) {
@@ -129,8 +130,10 @@ export default function SA20Chart() {
   }
   if (error || !data) return null;
 
-  const sa20 = series.find((s) => s.name === 'SA-20');
-  const sa20Latest = sa20 ? latest(sa20) : { value: 1000, pct: 0 };
+  /* The "featured" series — either selected or SA-20 */
+  const featured = selected ? series.find((s) => s.name === selected) : series.find((s) => s.name === 'SA-20');
+  const featuredLatest = featured ? latest(featured) : { value: 1000, pct: 0 };
+  const featuredColor = featured?.color || SA20_COLOR;
   const tooltipDate = tooltip ? dates[tooltip.idx] : null;
 
   return (
@@ -138,8 +141,10 @@ export default function SA20Chart() {
       {/* ── Header ── */}
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-start justify-between">
-          {/* Right side — title */}
-          <div className="text-right flex-1">
+          <div className="text-[10px] text-slate-500 mt-1">
+            מתחילת המדד 06.04.2026 · בסיס 1,000 נקודות
+          </div>
+          <div className="text-right">
             <div className="flex items-center justify-end gap-2 mb-1">
               <span className="text-lg font-bold text-slate-100">SA-20 מדד</span>
               <span className="text-xl">📈</span>
@@ -147,21 +152,19 @@ export default function SA20Chart() {
             <div className="text-xs text-slate-400 mb-3">
               20 מניות מעניינות 2026 לעומת מדדי ייחוס
             </div>
-            {/* Current value */}
-            <div className="flex items-baseline justify-end gap-3">
-              <span className="text-xs text-slate-400">SA-20 · מ-06.04.2026</span>
-              <span className={`text-sm font-bold ${sa20Latest.pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {sa20Latest.pct >= 0 ? '+' : ''}{sa20Latest.pct.toFixed(2)}%
-              </span>
-              <span className="text-3xl font-bold text-slate-100 tabular-nums">
-                {sa20Latest.value.toLocaleString('en', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-              </span>
-            </div>
           </div>
         </div>
-        {/* Left info line */}
-        <div className="text-[10px] text-slate-500 mt-2">
-          מתחילת המדד 06.04.2026 · בסיס 1,000 נקודות
+        {/* Featured value display */}
+        <div className="flex items-baseline justify-end gap-3">
+          <span className="text-xs text-slate-400">
+            {featured?.name || 'SA-20'} · מ-06.04.2026
+          </span>
+          <span className={`text-sm font-bold`} style={{ color: featuredLatest.pct >= 0 ? '#34d399' : '#f87171' }}>
+            {featuredLatest.pct >= 0 ? '+' : ''}{featuredLatest.pct.toFixed(2)}%
+          </span>
+          <span className="text-3xl font-bold tabular-nums" style={{ color: featuredColor }}>
+            {featuredLatest.value.toLocaleString('en', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+          </span>
         </div>
       </div>
 
@@ -209,26 +212,24 @@ export default function SA20Chart() {
             </text>
           ))}
 
-          {/* Lines */}
-          {series.map((s) => {
-            if (hidden.has(s.name)) return null;
+          {/* Lines — only visible series */}
+          {visible.map((s) => {
             const pts = s.points.filter((p) => dates.includes(p.date))
               .map((p) => `${xPos(p.date)},${yPos(p.pct)}`).join(' ');
             return (
               <polyline key={s.name} points={pts} fill="none" stroke={s.color}
-                strokeWidth={s.name === 'SA-20' ? 2.5 : 1.5}
+                strokeWidth={selected ? 2.5 : (s.name === 'SA-20' ? 2.5 : 1.5)}
                 strokeLinejoin="round" strokeLinecap="round" />
             );
           })}
 
           {/* Endpoint dots */}
-          {series.map((s) => {
-            if (hidden.has(s.name)) return null;
+          {visible.map((s) => {
             const last = s.points[s.points.length - 1];
             if (!last || !dates.includes(last.date)) return null;
             return (
               <circle key={s.name + '-dot'} cx={xPos(last.date)} cy={yPos(last.pct)}
-                r={3} fill={s.color} stroke="#0c1425" strokeWidth={1.5} />
+                r={3.5} fill={s.color} stroke="#0c1425" strokeWidth={1.5} />
             );
           })}
 
@@ -238,8 +239,7 @@ export default function SA20Chart() {
               <line x1={xPos(tooltipDate)} x2={xPos(tooltipDate)}
                 y1={PAD.top} y2={PAD.top + plotH}
                 stroke="#475569" strokeWidth={1} strokeDasharray="3,3" />
-              {series.map((s) => {
-                if (hidden.has(s.name)) return null;
+              {visible.map((s) => {
                 const pt = s.points.find((p) => p.date === tooltipDate);
                 if (!pt) return null;
                 return (
@@ -256,15 +256,14 @@ export default function SA20Chart() {
       {tooltip && tooltipDate && (
         <div className="mx-5 mb-2 bg-slate-800/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] flex flex-wrap gap-x-4 gap-y-1">
           <span className="text-slate-500 font-medium">{fmtDate(tooltipDate)}</span>
-          {series.map((s) => {
-            if (hidden.has(s.name)) return null;
+          {visible.map((s) => {
             const pt = s.points.find((p) => p.date === tooltipDate);
             if (!pt) return null;
             return (
               <span key={s.name} className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
                 <span className="text-slate-400">{s.name}</span>
-                <span style={{ color: pt.pct >= 0 ? '#34d399' : '#f87171' }}>
+                <span className="font-semibold" style={{ color: pt.pct >= 0 ? '#34d399' : '#f87171' }}>
                   {pt.pct >= 0 ? '+' : ''}{pt.pct.toFixed(2)}%
                 </span>
               </span>
@@ -273,17 +272,19 @@ export default function SA20Chart() {
         </div>
       )}
 
-      {/* ── Legend (bottom) ── */}
-      <div className="px-5 py-3 flex flex-wrap justify-center gap-x-4 gap-y-1.5 border-t border-slate-800">
+      {/* ── Legend (bottom) — click to solo ── */}
+      <div className="px-5 py-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5 border-t border-slate-800">
         {[...series].reverse().map((s) => {
           const l = latest(s);
+          const isSelected = selected === s.name;
+          const isDimmed = selected !== null && !isSelected;
           return (
             <button
               key={s.name}
-              onClick={() => toggleSeries(s.name)}
-              className={`flex items-center gap-1.5 text-[11px] transition-opacity ${
-                hidden.has(s.name) ? 'opacity-25' : 'opacity-100'
-              } hover:opacity-80`}
+              onClick={() => handleLegendClick(s.name)}
+              className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md transition-all ${
+                isSelected ? 'bg-slate-800 ring-1 ring-slate-600' : ''
+              } ${isDimmed ? 'opacity-30' : 'opacity-100'} hover:opacity-90`}
             >
               <span className="font-bold tabular-nums" style={{ color: l.pct >= 0 ? '#34d399' : '#f87171' }}>
                 {l.value.toFixed(1)}
@@ -311,10 +312,8 @@ export default function SA20Chart() {
               .map((s) => (
                 <div key={s.ticker} className="flex items-center justify-between text-[11px] py-0.5">
                   <span className="text-slate-400 truncate ml-2">{s.name}</span>
-                  <span
-                    className="font-semibold tabular-nums flex-shrink-0"
-                    style={{ color: s.pctChange >= 0 ? '#34d399' : '#f87171' }}
-                  >
+                  <span className="font-semibold tabular-nums flex-shrink-0"
+                    style={{ color: s.pctChange >= 0 ? '#34d399' : '#f87171' }}>
                     {s.pctChange >= 0 ? '+' : ''}{s.pctChange.toFixed(1)}%
                   </span>
                 </div>
@@ -326,6 +325,8 @@ export default function SA20Chart() {
       {/* ── Footer ── */}
       <div className="px-5 py-2 text-center text-[10px] text-slate-600 border-t border-slate-800/50">
         עדכון: {new Date(data.lastUpdated).toLocaleDateString('he-IL')}
+        {' · '}
+        <span>מדדי חו&quot;ל מוצמדים לשקל</span>
       </div>
     </div>
   );

@@ -62,6 +62,8 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
 // US last trading day before April 6 = April 2 (Thursday, Good Friday closed)
 const INDEX_START = '2026-04-02';
 const SA20_LAUNCH = '2026-04-06';
+// Hardcoded fallback base FX rate (USD/ILS on April 2, 2026) — confirmed by user
+const FALLBACK_BASE_FX = 3.14;
 const BENCHMARKS = [
   { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS' },
   { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD' },
@@ -100,15 +102,12 @@ export async function GET(request: Request) {
       })),
     ]);
 
-    // ── Build FX rate maps (date → USD/ILS rate) ──
+    // ── Build FX rate map (date → USD/ILS closing rate) ──
     const fxMap = new Map<string, number>();
-    const fxOpenMap = new Map<string, number>();
     if (fxResult) {
       for (let i = 0; i < fxResult.dates.length; i++) {
         const r = fxResult.prices[i];
         if (r != null && !isNaN(r) && r > 0) fxMap.set(fxResult.dates[i], r);
-        const o = fxResult.opens[i];
-        if (o != null && !isNaN(o) && o > 0) fxOpenMap.set(fxResult.dates[i], o);
       }
     }
 
@@ -216,20 +215,10 @@ export async function GET(request: Request) {
       const basePrice = opens[baseIdx];
       const baseDate = dates[baseIdx];
 
-      const needsFx = br.currency === 'USD' && fxOpenMap.size > 0;
-      // Get FX OPENING rate on the SAME date as the base price
-      function getOpenFx(date: string): number | null {
-        const exact = fxOpenMap.get(date);
-        if (exact) return exact;
-        const d = new Date(date);
-        for (let i = 1; i <= 7; i++) {
-          d.setDate(d.getDate() - 1);
-          const r = fxOpenMap.get(d.toISOString().split('T')[0]);
-          if (r) return r;
-        }
-        return null;
-      }
-      const baseFx = needsFx ? getOpenFx(baseDate) : null;
+      const needsFx = br.currency === 'USD';
+      // Use CLOSING FX rates consistently for both base and daily
+      // getFx already handles nearest-date fallback from fxMap (closing rates)
+      const baseFx = needsFx ? (getFx(baseDate) || FALLBACK_BASE_FX) : null;
 
       // Find last valid price for debug
       let lastIdx = -1;
