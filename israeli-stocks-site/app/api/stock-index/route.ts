@@ -63,6 +63,9 @@ interface TaseHistoryItem {
   [key: string]: unknown;
 }
 
+// Store debug info from first TASE API call
+let taseDebugInfo: { status?: number; statusText?: string; body?: unknown; error?: string } | null = null;
+
 async function fetchTaseHistory(
   taseId: number,
   startDate: string
@@ -89,9 +92,31 @@ async function fetchTaseHistory(
       cache: 'no-store',
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (!taseDebugInfo) {
+        taseDebugInfo = { status: res.status, statusText: res.statusText };
+        try { taseDebugInfo.body = await res.text(); } catch { /* ignore */ }
+      }
+      return null;
+    }
 
     const data = await res.json();
+
+    // Capture first successful response structure for debugging
+    if (!taseDebugInfo) {
+      const keys = Object.keys(data || {});
+      const firstItem = (data?.Items || data?.items || [])[0];
+      taseDebugInfo = {
+        status: res.status,
+        body: {
+          topLevelKeys: keys,
+          firstItemKeys: firstItem ? Object.keys(firstItem) : [],
+          firstItemSample: firstItem || null,
+          totalItems: (data?.Items || data?.items || []).length,
+        },
+      };
+    }
+
     const items: TaseHistoryItem[] = data?.Items || data?.items || [];
     if (items.length === 0) return null;
 
@@ -289,6 +314,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Reset debug info for this request
+    taseDebugInfo = null;
+
     const periodStart = getPeriodStart();
     const tickerData = loadTickerData();
     const stocks = tickerData.stocks as Array<{
@@ -508,6 +536,7 @@ export async function GET(request: Request) {
         yahooStocks: yahooCount,
         totalFetched: stockHistories.length,
       },
+      taseDebug: taseDebugInfo,
     });
   } catch (error) {
     return NextResponse.json(
