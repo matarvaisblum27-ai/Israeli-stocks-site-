@@ -46,24 +46,51 @@ async function yahooDaily(
       },
       cache: 'no-store',
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.log(`[YAHOO] ${ticker} HTTP ${res.status}`);
+      return null;
+    }
 
     const data = await res.json();
     const result = data?.chart?.result?.[0];
-    if (!result) return null;
+    if (!result) {
+      console.log(`[YAHOO] ${ticker} no chart result`);
+      return null;
+    }
 
     const timestamps: number[] = result.timestamp || [];
     const quote = result.indicators?.quote?.[0];
     const closes: number[] = quote?.close || [];
-    if (!timestamps.length || !closes.length) return null;
+    if (!timestamps.length || !closes.length) {
+      console.log(`[YAHOO] ${ticker} empty timestamps/closes`);
+      return null;
+    }
 
     const dates = timestamps.map(
       (t: number) => new Date(t * 1000).toISOString().split('T')[0]
     );
+    console.log(`[YAHOO] ${ticker} OK: ${dates.length} data points, first=${dates[0]} last=${dates[dates.length - 1]}`);
     return { dates, prices: closes };
-  } catch {
+  } catch (e) {
+    console.log(`[YAHOO] ${ticker} EXCEPTION: ${e}`);
     return null;
   }
+}
+
+// ── Robust FX fetcher: try multiple tickers ──
+async function fetchFxData(fromDate: Date): Promise<{ dates: string[]; prices: number[] } | null> {
+  // Try USDILS=X first (explicit pair name), then ILS=X (short form)
+  const tickers = ['USDILS=X', 'ILS=X'];
+  for (const ticker of tickers) {
+    const result = await yahooDaily(ticker, fromDate);
+    if (result && result.dates.length > 0) {
+      console.log(`[FX] Using ticker ${ticker} with ${result.dates.length} data points`);
+      return result;
+    }
+    console.log(`[FX] Ticker ${ticker} failed or returned empty`);
+  }
+  console.log('[FX] ALL FX tickers failed — no live FX data available');
+  return null;
 }
 
 // ── Helper: find nearest FX rate from a map ──
@@ -100,6 +127,7 @@ export async function GET(request: Request) {
     const periodStart = new Date(FETCH_START_DATE);
 
     // ── Fetch all LIVE data in parallel ──
+    // FX is fetched separately with fallback logic (try USDILS=X then ILS=X)
     const [stockResults, fxResult, ...benchmarkResults] = await Promise.all([
       // SA-20 stocks (live prices)
       Promise.allSettled(
@@ -109,8 +137,8 @@ export async function GET(request: Request) {
           history: await yahooDaily(s.ticker, periodStart),
         }))
       ),
-      // USD/ILS exchange rate (live)
-      yahooDaily('ILS=X', periodStart),
+      // USD/ILS exchange rate (live) — tries USDILS=X then ILS=X
+      fetchFxData(periodStart),
       // Benchmark indices (live prices)
       ...BENCHMARKS.map(async (b) => ({
         ...b,
@@ -120,18 +148,29 @@ export async function GET(request: Request) {
 
     // ── Build LIVE FX rate map (date → USD/ILS closing rate) ──
     const fxMap = new Map<string, number>();
+    let fxStatus = 'no_data';
     if (fxResult) {
       for (let i = 0; i < fxResult.dates.length; i++) {
         const r = fxResult.prices[i];
         if (r != null && !isNaN(r) && r > 0)
           fxMap.set(fxResult.dates[i], r);
       }
+      fxStatus = fxMap.size > 0 ? 'ok' : 'all_null_prices';
     }
     const getFx = createFxLookup(fxMap);
 
-    // ── Dynamic base FX: find the historical FX rate near SA20 launch date from Yahoo ──
-    // This ensures both fx_t0 and fx_t1 come from the SAME data source (Yahoo)
+    // ── FX diagnostics (Vercel Function Logs) ──
+    console.log(`[FX-MAP] status=${fxStatus} size=${fxMap.size}`);
+    if (fxMap.size > 0) {
+      const entries = Array.from(fxMap.entries()).sort();
+      console.log(`[FX-MAP] first: ${entries[0][0]}=${entries[0][1]}`);
+      console.log(`[FX-MAP] last: ${entries[entries.length - 1][0]}=${entries[entries.length - 1][1]}`);
+    }
+
+    // ── Dynamic base FX: from Yahoo data near launch date, fallback to config ──
     const dynamicBaseFx = getFx(SA20_LAUNCH_DATE) || BASE_EXCHANGE_RATES.USD_ILS;
+    const fxSource = getFx(SA20_LAUNCH_DATE) ? 'yahoo_dynamic' : 'config_fallback';
+    console.log(`[FX-BASE] dynamicBaseFx=${dynamicBaseFx} source=${fxSource}`);
 
     // ── Build per-stock data using STATIC base prices from config ──
     const stockBasePrices = new Map(
@@ -142,8 +181,8 @@ export async function GET(request: Request) {
       name: string;
       ticker: string;
       priceByDate: Map<string, number>;
-      basePrice: number;   // STATIC from config
-      dividends: number;   // STATIC from config
+      basePrice: number;
+      dividends: number;
     }>;
 
     for (const r of stockResults) {
@@ -162,8 +201,8 @@ export async function GET(request: Request) {
         name,
         ticker,
         priceByDate,
-        basePrice: config.basePrice,     // STATIC
-        dividends: config.dividends,     // STATIC
+        basePrice: config.basePrice,
+        dividends: config.dividends,
       });
     }
 
@@ -181,8 +220,6 @@ export async function GET(request: Request) {
 
     // ══════════════════════════════════════════
     // ── SA-20 Index (equal-weight, base 1000) ──
-    // Return per stock = ((livePrice + dividends) / basePrice) - 1
-    // SA-20 value = 1000 × (1 + average of all stock returns)
     // ══════════════════════════════════════════
 
     const sa20Series: Array<{ date: string; value: number }> = [];
@@ -194,10 +231,7 @@ export async function GET(request: Request) {
       for (const sm of stockMaps) {
         const livePrice = sm.priceByDate.get(date);
         if (livePrice == null || isNaN(livePrice)) continue;
-
-        // Formula: ((livePrice + dividends) / staticBasePrice) - 1
-        const stockReturn =
-          (livePrice + sm.dividends) / sm.basePrice - 1;
+        const stockReturn = (livePrice + sm.dividends) / sm.basePrice - 1;
         totalReturn += stockReturn;
         count++;
       }
@@ -214,7 +248,7 @@ export async function GET(request: Request) {
     // ══════════════════════════════════════════
     // ── Benchmark indices ──
     // ILS benchmarks: return = (livePrice / staticBasePrice) - 1
-    // USD benchmarks: ILS return = (livePrice / staticBasePrice) × (liveFX / staticBaseFX) - 1
+    // USD benchmarks: ILS return = (livePrice / staticBasePrice) × (liveFX / baseFX) - 1
     // ══════════════════════════════════════════
 
     const benchmarkSeries = benchmarkResults.map((br) => {
@@ -227,7 +261,6 @@ export async function GET(request: Request) {
       // Use STATIC base price from config; fall back to Yahoo if config has 0
       let staticBase = br.basePrice;
       if (!staticBase || staticBase <= 0) {
-        // Fallback: find closing price of last trading day before launch
         for (let i = dates.length - 1; i >= 0; i--) {
           if (
             dates[i] < SA20_LAUNCH_DATE &&
@@ -244,28 +277,31 @@ export async function GET(request: Request) {
         return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
       const data: Array<{ date: string; value: number }> = [];
+      let fxHits = 0;
+      let fxMisses = 0;
+
       for (let i = 0; i < dates.length; i++) {
         if (dates[i] < SA20_LAUNCH_DATE) continue;
         const livePrice = prices[i];
         if (livePrice == null || isNaN(livePrice)) continue;
 
         if (needsFx) {
-          // Get LIVE current FX rate
           const liveFx = getFx(dates[i]);
-          if (!liveFx) continue;
+          if (!liveFx) {
+            fxMisses++;
+            continue;
+          }
+          fxHits++;
 
-          // THE FORMULA:
-          // Total_ILS_Return = ((livePrice / staticBase) * (liveFx / dynamicBaseFx)) - 1
-          // Both fx_t0 and fx_t1 come from Yahoo → no data source mismatch
           const result = calcILSReturn({
-            index_t0: staticBase,       // STATIC from config
-            index_t1: livePrice,        // LIVE from Yahoo
-            fx_t0: dynamicBaseFx,       // DYNAMIC from Yahoo (near launch date)
-            fx_t1: liveFx,              // LIVE from Yahoo
+            index_t0: staticBase,
+            index_t1: livePrice,
+            fx_t0: dynamicBaseFx,
+            fx_t1: liveFx,
           });
           data.push({ date: dates[i], value: result.ilsIndexValue });
         } else {
-          // ILS benchmark — no FX needed
+          // ILS benchmark — no FX conversion needed
           const ratio = livePrice / staticBase;
           data.push({
             date: dates[i],
@@ -274,16 +310,22 @@ export async function GET(request: Request) {
         }
       }
 
+      if (needsFx) {
+        console.log(`[BENCH] ${br.name}: fxHits=${fxHits} fxMisses=${fxMisses} dataPoints=${data.length}`);
+        if (data.length > 0) {
+          const last = data[data.length - 1];
+          console.log(`[BENCH] ${br.name} last: date=${last.date} ilsValue=${last.value}`);
+        }
+      }
+
       return { name: br.name, ticker: br.ticker, color: br.color, data };
     });
 
     // ══════════════════════════════════════════
     // ── Individual stock performance ──
-    // Return = ((livePrice + dividends) / staticBasePrice) - 1
     // ══════════════════════════════════════════
 
     const stockPerformance = stockMaps.map((sm) => {
-      // Get the most recent live price
       const sortedEntries = Array.from(sm.priceByDate.entries()).sort(
         (a, b) => b[0].localeCompare(a[0])
       );
@@ -305,7 +347,7 @@ export async function GET(request: Request) {
       (s) => !successTickers.has(s.ticker)
     ).map((s) => ({ name: s.name, ticker: s.ticker }));
 
-    // ── Debug: verify FX is applied to benchmarks ──
+    // ── Benchmark debug info (in API JSON, not in UI) ──
     const benchmarkDebug: Record<string, unknown> = {};
     for (const bs of benchmarkSeries) {
       const lastPoint = bs.data[bs.data.length - 1];
@@ -323,8 +365,8 @@ export async function GET(request: Request) {
       };
     }
 
-    // ── Response ──
-    return NextResponse.json({
+    // ── Response (with cache-busting headers) ──
+    const response = NextResponse.json({
       sa20: sa20Series,
       benchmarks: benchmarkSeries,
       stockPerformance,
@@ -334,12 +376,18 @@ export async function GET(request: Request) {
       lastUpdated: new Date().toISOString(),
       startDate: FETCH_START_DATE,
       fxRatesCount: fxMap.size,
+      fxStatus,
+      fxSource,
       liveFxRate: getFx(allDates[allDates.length - 1]),
       dynamicBaseFx,
       configBaseFx: BASE_EXCHANGE_RATES.USD_ILS,
       benchmarkDebug,
-      _version: 'fix-fx-ticker-and-dynamic-base-v3',
+      _version: 'fix-fx-dual-ticker-v4',
     });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('CDN-Cache-Control', 'no-store');
+    response.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+    return response;
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch stock data', details: String(error) },
