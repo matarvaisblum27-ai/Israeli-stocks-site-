@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-
-function loadTickerData() {
-  const filePath = join(process.cwd(), 'public', 'data', 'stock-tickers.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+import {
+  SA20_LAUNCH_DATE,
+  FETCH_START_DATE,
+  BASE_EXCHANGE_RATES,
+  BENCHMARKS,
+  SA20_STOCKS,
+} from '@/lib/index-config';
+import { calcILSReturn } from '@/lib/ils-return';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -26,15 +27,23 @@ function isRateLimited(ip: string): boolean {
   return entry.count > MAX_REQUESTS;
 }
 
-// ── Yahoo Finance fetcher ──
-async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: string[]; opens: number[]; prices: number[] } | null> {
+// ── Yahoo Finance fetcher (LIVE data only) ──
+async function yahooDaily(
+  ticker: string,
+  fromDate: Date
+): Promise<{ dates: string[]; prices: number[] } | null> {
   try {
     const p1 = Math.floor(fromDate.getTime() / 1000);
     const p2 = Math.floor(Date.now() / 1000);
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${p1}&period2=${p2}&interval=1d&includeAdjustedClose=true`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
+      ticker
+    )}?period1=${p1}&period2=${p2}&interval=1d&includeAdjustedClose=true`;
 
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
       cache: 'no-store',
     });
     if (!res.ok) return null;
@@ -45,283 +54,268 @@ async function yahooDaily(ticker: string, fromDate: Date): Promise<{ dates: stri
 
     const timestamps: number[] = result.timestamp || [];
     const quote = result.indicators?.quote?.[0];
-    const opens: number[] = quote?.open || [];
     const closes: number[] = quote?.close || [];
     if (!timestamps.length || !closes.length) return null;
 
-    const dates = timestamps.map((t: number) => new Date(t * 1000).toISOString().split('T')[0]);
-    return { dates, opens, prices: closes };
+    const dates = timestamps.map(
+      (t: number) => new Date(t * 1000).toISOString().split('T')[0]
+    );
+    return { dates, prices: closes };
   } catch {
     return null;
   }
 }
 
-// ── Config ──
-// Fetch from April 2 to get the last trading day before SA20 launch (April 6)
-// TASE last trading day before April 6 = April 3 (Friday, Good Friday but TASE open)
-// US last trading day before April 6 = April 2 (Thursday, Good Friday closed)
-const INDEX_START = '2026-04-02';
-const SA20_LAUNCH = '2026-04-06';
-// Hardcoded fallback base FX rate (USD/ILS on SA20 launch April 6, 2026) — from Shlomi's spreadsheet
-const FALLBACK_BASE_FX = 3.130375;
-// Hardcoded base prices from Shlomi's spreadsheet (שער השקת מדד 06/04/26)
-const BENCHMARKS = [
-  { name: 'ת"א 125',    ticker: '^TA125.TA', color: '#60a5fa', currency: 'ILS', basePrice: 4107.92 },
-  { name: 'S&P 500',     ticker: '^GSPC',     color: '#f59e0b', currency: 'USD', basePrice: 6582.69 },
-  { name: 'Nasdaq 100',  ticker: '^NDX',      color: '#a78bfa', currency: 'USD', basePrice: 0 },
-  { name: 'MSCI World',  ticker: 'URTH',      color: '#f472b6', currency: 'USD', basePrice: 0 },
-];
+// ── Helper: find nearest FX rate from a map ──
+function createFxLookup(fxMap: Map<string, number>) {
+  return function getFx(date: string): number | null {
+    const exact = fxMap.get(date);
+    if (exact) return exact;
+    const d = new Date(date);
+    for (let i = 1; i <= 7; i++) {
+      d.setDate(d.getDate() - 1);
+      const r = fxMap.get(d.toISOString().split('T')[0]);
+      if (r) return r;
+    }
+    return null;
+  };
+}
+
+// ══════════════════════════════════════════════
+// ── GET handler ──
+// Static base data: imported from index-config.ts
+// Live data: fetched from Yahoo Finance at runtime
+// ══════════════════════════════════════════════
 
 export async function GET(request: Request) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
-    || request.headers.get('x-real-ip') || 'unknown';
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
   if (isRateLimited(ip)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
   try {
-    const periodStart = new Date(INDEX_START);
-    const tickerData = loadTickerData();
-    const stocks: Array<{ name: string; ticker: string; basePrice?: number; dividends?: number }> = tickerData.stocks;
+    const periodStart = new Date(FETCH_START_DATE);
 
-    // ── Fetch everything in parallel ──
+    // ── Fetch all LIVE data in parallel ──
     const [stockResults, fxResult, ...benchmarkResults] = await Promise.all([
-      // SA20 stocks
+      // SA-20 stocks (live prices)
       Promise.allSettled(
-        stocks.map(async (s) => ({
-          name: s.name,
+        SA20_STOCKS.map(async (s) => ({
           ticker: s.ticker,
+          name: s.name,
           history: await yahooDaily(s.ticker, periodStart),
         }))
       ),
-      // USD/ILS exchange rate
+      // USD/ILS exchange rate (live)
       yahooDaily('USDILS=X', periodStart),
-      // Benchmarks
+      // Benchmark indices (live prices)
       ...BENCHMARKS.map(async (b) => ({
         ...b,
         history: await yahooDaily(b.ticker, periodStart),
       })),
     ]);
 
-    // ── Build FX rate map (date → USD/ILS closing rate) ──
+    // ── Build LIVE FX rate map (date → USD/ILS closing rate) ──
     const fxMap = new Map<string, number>();
     if (fxResult) {
       for (let i = 0; i < fxResult.dates.length; i++) {
         const r = fxResult.prices[i];
-        if (r != null && !isNaN(r) && r > 0) fxMap.set(fxResult.dates[i], r);
+        if (r != null && !isNaN(r) && r > 0)
+          fxMap.set(fxResult.dates[i], r);
       }
     }
+    const getFx = createFxLookup(fxMap);
 
-    // Find nearest FX rate (handles weekends/holidays)
-    function getFx(date: string): number | null {
-      const exact = fxMap.get(date);
-      if (exact) return exact;
-      const d = new Date(date);
-      for (let i = 1; i <= 7; i++) {
-        d.setDate(d.getDate() - 1);
-        const r = fxMap.get(d.toISOString().split('T')[0]);
-        if (r) return r;
-      }
-      return null;
-    }
+    // ── Build per-stock data using STATIC base prices from config ──
+    const stockBasePrices = new Map(
+      SA20_STOCKS.map((s) => [s.ticker, s])
+    );
 
-    // ── SA20 index ──
-    const stockHistories: Array<{ name: string; ticker: string; dates: string[]; opens: number[]; prices: number[] }> = [];
+    const stockMaps = [] as Array<{
+      name: string;
+      ticker: string;
+      priceByDate: Map<string, number>;
+      basePrice: number;   // STATIC from config
+      dividends: number;   // STATIC from config
+    }>;
+
     for (const r of stockResults) {
-      if (r.status === 'fulfilled' && r.value.history) {
-        stockHistories.push({ name: r.value.name, ticker: r.value.ticker, ...r.value.history });
-      }
-    }
+      if (r.status !== 'fulfilled' || !r.value.history) continue;
+      const { ticker, name, history } = r.value;
+      const config = stockBasePrices.get(ticker);
+      if (!config || config.basePrice <= 0) continue;
 
-    // Build per-stock price maps with HARDCODED base prices from Shlomi's spreadsheet
-    // These are the exact "שער השקת מדד 06/04/26" values — guaranteed to match
-    const basePriceMap = new Map<string, number>();
-    const dividendMap = new Map<string, number>();
-    for (const s of stocks) {
-      if (s.basePrice) basePriceMap.set(s.ticker, s.basePrice);
-      if (s.dividends) dividendMap.set(s.ticker, s.dividends);
-    }
-
-    const stockMaps = stockHistories.map((sh) => {
-      const map = new Map<string, number>();
-      for (let i = 0; i < sh.dates.length; i++) {
-        if (sh.prices[i] != null && !isNaN(sh.prices[i])) map.set(sh.dates[i], sh.prices[i]);
+      const priceByDate = new Map<string, number>();
+      for (let i = 0; i < history.dates.length; i++) {
+        const p = history.prices[i];
+        if (p != null && !isNaN(p)) priceByDate.set(history.dates[i], p);
       }
 
-      // Use hardcoded base price from JSON (Shlomi's spreadsheet values)
-      const basePrice = basePriceMap.get(sh.ticker) || 0;
-      const dividends = dividendMap.get(sh.ticker) || 0;
+      stockMaps.push({
+        name,
+        ticker,
+        priceByDate,
+        basePrice: config.basePrice,     // STATIC
+        dividends: config.dividends,     // STATIC
+      });
+    }
 
-      return { name: sh.name, ticker: sh.ticker, map, basePrice, dividends };
-    });
-
-    // Collect all dates
+    // ── Collect all trading dates ──
     const allDatesSet = new Set<string>();
-    stockHistories.forEach((sh) => sh.dates.forEach((d) => allDatesSet.add(d)));
-    benchmarkResults.forEach((br) => { if (br.history) br.history.dates.forEach((d: string) => allDatesSet.add(d)); });
+    for (const sm of stockMaps) {
+      for (const d of sm.priceByDate.keys()) allDatesSet.add(d);
+    }
+    for (const br of benchmarkResults) {
+      if (br.history) {
+        for (const d of br.history.dates) allDatesSet.add(d);
+      }
+    }
     const allDates = Array.from(allDatesSet).sort();
 
-    // SA20: equal-weight average % change, base 1000
-    // Display starts from April 6 even though base prices are from pre-launch
+    // ══════════════════════════════════════════
+    // ── SA-20 Index (equal-weight, base 1000) ──
+    // Return per stock = ((livePrice + dividends) / basePrice) - 1
+    // SA-20 value = 1000 × (1 + average of all stock returns)
+    // ══════════════════════════════════════════
+
     const sa20Series: Array<{ date: string; value: number }> = [];
     for (const date of allDates) {
-      if (date < SA20_LAUNCH) continue; // Skip pre-launch dates
-      let totalPct = 0, count = 0;
+      if (date < SA20_LAUNCH_DATE) continue;
+
+      let totalReturn = 0;
+      let count = 0;
       for (const sm of stockMaps) {
-        if (sm.basePrice <= 0) continue;
-        const p = sm.map.get(date);
-        if (p != null && !isNaN(p)) {
-          // Return = ((price + dividends) / basePrice) - 1
-          totalPct += (((p + sm.dividends) / sm.basePrice) - 1) * 100;
-          count++;
-        }
+        const livePrice = sm.priceByDate.get(date);
+        if (livePrice == null || isNaN(livePrice)) continue;
+
+        // Formula: ((livePrice + dividends) / staticBasePrice) - 1
+        const stockReturn =
+          (livePrice + sm.dividends) / sm.basePrice - 1;
+        totalReturn += stockReturn;
+        count++;
       }
+
       if (count > 0) {
-        sa20Series.push({ date, value: Math.round(1000 * (1 + totalPct / count / 100) * 10) / 10 });
+        const avgReturn = totalReturn / count;
+        sa20Series.push({
+          date,
+          value: Math.round(1000 * (1 + avgReturn) * 10) / 10,
+        });
       }
     }
 
-    // ── Benchmarks ──
-    // For USD benchmarks: convert to ILS performance
-    // Formula: ILS_return = (index_today/index_base) × (fx_today/fx_base) - 1
-    // This correctly combines the index % change with the currency % change
+    // ══════════════════════════════════════════
+    // ── Benchmark indices ──
+    // ILS benchmarks: return = (livePrice / staticBasePrice) - 1
+    // USD benchmarks: ILS return = (livePrice / staticBasePrice) × (liveFX / staticBaseFX) - 1
+    // ══════════════════════════════════════════
 
-    const benchmarkDebug: Record<string, unknown> = {};
     const benchmarkSeries = benchmarkResults.map((br) => {
-      if (!br.history) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
+      if (!br.history)
+        return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      const { dates, prices, opens } = br.history;
-
-      // For TASE benchmarks (TA-125): use opening price ON April 6 (TASE trades Sundays)
-      // For US benchmarks (S&P, Nasdaq, MSCI): use closing price of last trading day before April 6
-      const isTASE = br.ticker.endsWith('.TA');
-
-      let baseIdx = -1;
-
-      if (isTASE) {
-        // 1st: opening price ON April 6
-        for (let i = 0; i < dates.length; i++) {
-          if (dates[i] === SA20_LAUNCH && opens[i] != null && !isNaN(opens[i]) && opens[i] > 0) {
-            baseIdx = i;
-            break;
-          }
-        }
-      }
-
-      // For US indices, or fallback for TASE: closing price of last day before April 6
-      if (baseIdx < 0) {
-        for (let i = dates.length - 1; i >= 0; i--) {
-          if (dates[i] < SA20_LAUNCH && prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
-            baseIdx = i;
-            break;
-          }
-        }
-      }
-      // Final fallback
-      if (baseIdx < 0) {
-        for (let i = 0; i < prices.length; i++) {
-          if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
-            baseIdx = i;
-            break;
-          }
-        }
-      }
-      if (baseIdx < 0) return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
-
-      // Use hardcoded base price from Shlomi's spreadsheet if available
-      // Otherwise fall back to: TASE=open on April 6, US=close before April 6
-      const fallbackPrice = (isTASE && dates[baseIdx] === SA20_LAUNCH) ? opens[baseIdx] : prices[baseIdx];
-      const basePrice = (br.basePrice && br.basePrice > 0) ? br.basePrice : fallbackPrice;
-      const baseDate = dates[baseIdx];
-
+      const { dates, prices } = br.history;
       const needsFx = br.currency === 'USD';
-      // FX base: use the rate closest to SA20 launch date (April 6), NOT the benchmark's base date
-      // This ensures FX conversion measures currency change from the same starting point
-      const baseFx = needsFx ? (getFx(SA20_LAUNCH) || getFx(baseDate) || FALLBACK_BASE_FX) : null;
 
-      // Find last valid price for debug
-      let lastIdx = -1;
-      for (let i = prices.length - 1; i >= 0; i--) {
-        if (prices[i] != null && !isNaN(prices[i]) && prices[i] > 0) {
-          lastIdx = i;
-          break;
+      // Use STATIC base price from config; fall back to Yahoo if config has 0
+      let staticBase = br.basePrice;
+      if (!staticBase || staticBase <= 0) {
+        // Fallback: find closing price of last trading day before launch
+        for (let i = dates.length - 1; i >= 0; i--) {
+          if (
+            dates[i] < SA20_LAUNCH_DATE &&
+            prices[i] != null &&
+            !isNaN(prices[i]) &&
+            prices[i] > 0
+          ) {
+            staticBase = prices[i];
+            break;
+          }
         }
       }
-      const lastPrice = lastIdx >= 0 ? prices[lastIdx] : basePrice;
-      const lastDate = lastIdx >= 0 ? dates[lastIdx] : baseDate;
-      const lastFx = needsFx ? getFx(lastDate) : null;
+      if (!staticBase || staticBase <= 0)
+        return { name: br.name, ticker: br.ticker, color: br.color, data: [] };
 
-      // Debug info per benchmark
-      benchmarkDebug[br.name] = {
-        baseDate,
-        basePrice: Math.round(basePrice * 100) / 100,
-        basePriceType: 'close',
-        lastDate,
-        lastPrice: Math.round(lastPrice * 100) / 100,
-        indexChangePct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
-        ...(needsFx ? {
-          baseFx: baseFx ? Math.round(baseFx * 10000) / 10000 : null,
-          baseFxSource: getFx(SA20_LAUNCH) ? 'SA20_LAUNCH' : getFx(baseDate) ? 'baseDate' : 'FALLBACK',
-          lastFx: lastFx ? Math.round(lastFx * 10000) / 10000 : null,
-          fxChangePct: baseFx && lastFx ? Math.round(((lastFx / baseFx) - 1) * 10000) / 100 : null,
-          ilsReturnPct: baseFx && lastFx ? Math.round(((lastPrice / basePrice) * (lastFx / baseFx) - 1) * 10000) / 100 : null,
-          shlomiExpected: br.name === 'S&P 500' ? '-3.22%' : undefined,
-        } : {
-          returnPct: Math.round(((lastPrice / basePrice) - 1) * 10000) / 100,
-        }),
-        totalDataPoints: dates.length,
-      };
+      // STATIC base FX from config
+      const staticBaseFx = BASE_EXCHANGE_RATES.USD_ILS;
 
       const data: Array<{ date: string; value: number }> = [];
       for (let i = 0; i < dates.length; i++) {
-        if (dates[i] < SA20_LAUNCH) continue; // Skip pre-launch dates
-        const p = prices[i];
-        if (p == null || isNaN(p)) continue;
+        if (dates[i] < SA20_LAUNCH_DATE) continue;
+        const livePrice = prices[i];
+        if (livePrice == null || isNaN(livePrice)) continue;
 
-        if (needsFx && baseFx) {
-          // USD→ILS: multiply the index ratio by the FX ratio
-          const todayFx = getFx(dates[i]);
-          if (!todayFx) continue;
-          const ilsReturn = (p / basePrice) * (todayFx / baseFx);
-          data.push({ date: dates[i], value: Math.round(1000 * ilsReturn * 10) / 10 });
+        if (needsFx) {
+          // Get LIVE current FX rate
+          const liveFx = getFx(dates[i]);
+          if (!liveFx) continue;
+
+          // THE FORMULA:
+          // Total_ILS_Return = ((livePrice / staticBase) * (liveFx / staticBaseFx)) - 1
+          const result = calcILSReturn({
+            index_t0: staticBase,       // STATIC from config
+            index_t1: livePrice,        // LIVE from Yahoo
+            fx_t0: staticBaseFx,        // STATIC from config
+            fx_t1: liveFx,              // LIVE from Yahoo
+          });
+          data.push({ date: dates[i], value: result.ilsIndexValue });
         } else {
-          // ILS benchmark (TA-125) — direct % change
-          const pctChange = (p - basePrice) / basePrice;
-          data.push({ date: dates[i], value: Math.round(1000 * (1 + pctChange) * 10) / 10 });
+          // ILS benchmark — no FX needed
+          const ratio = livePrice / staticBase;
+          data.push({
+            date: dates[i],
+            value: Math.round(1000 * ratio * 10) / 10,
+          });
         }
       }
+
       return { name: br.name, ticker: br.ticker, color: br.color, data };
     });
 
+    // ══════════════════════════════════════════
     // ── Individual stock performance ──
-    // Return = ((current_price + dividends) / base_price) - 1
-    const stockPerformance = stockMaps
-      .filter((sm) => sm.basePrice > 0)
-      .map((sm) => {
-        const entries = Array.from(sm.map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-        const latestPrice = entries[0]?.[1] || sm.basePrice;
-        const pctChange = (((latestPrice + sm.dividends) / sm.basePrice) - 1) * 100;
-        return { name: sm.name, ticker: sm.ticker, pctChange: Math.round(pctChange * 100) / 100, latestPrice };
-      });
+    // Return = ((livePrice + dividends) / staticBasePrice) - 1
+    // ══════════════════════════════════════════
 
-    const successTickers = stockHistories.map((s) => s.ticker);
-    const failedTickers = stocks
-      .filter((s) => !successTickers.includes(s.ticker))
-      .map((s) => ({ name: s.name, ticker: s.ticker }));
+    const stockPerformance = stockMaps.map((sm) => {
+      // Get the most recent live price
+      const sortedEntries = Array.from(sm.priceByDate.entries()).sort(
+        (a, b) => b[0].localeCompare(a[0])
+      );
+      const latestPrice = sortedEntries[0]?.[1] || sm.basePrice;
+      const pctChange =
+        ((latestPrice + sm.dividends) / sm.basePrice - 1) * 100;
 
+      return {
+        name: sm.name,
+        ticker: sm.ticker,
+        pctChange: Math.round(pctChange * 100) / 100,
+        latestPrice,
+      };
+    });
+
+    // ── Failed tickers ──
+    const successTickers = new Set(stockMaps.map((s) => s.ticker));
+    const failedTickers = SA20_STOCKS.filter(
+      (s) => !successTickers.has(s.ticker)
+    ).map((s) => ({ name: s.name, ticker: s.ticker }));
+
+    // ── Response ──
     return NextResponse.json({
       sa20: sa20Series,
       benchmarks: benchmarkSeries,
       stockPerformance,
-      stockCount: stockHistories.length,
-      totalStocks: stocks.length,
+      stockCount: stockMaps.length,
+      totalStocks: SA20_STOCKS.length,
       failedTickers,
       lastUpdated: new Date().toISOString(),
-      startDate: INDEX_START,
+      startDate: FETCH_START_DATE,
       fxRatesCount: fxMap.size,
-      baseFxRate: getFx(allDates[0]),
-      latestFxRate: getFx(allDates[allDates.length - 1]),
-      benchmarkDebug,
+      liveFxRate: getFx(allDates[allDates.length - 1]),
+      staticBaseFx: BASE_EXCHANGE_RATES.USD_ILS,
     });
   } catch (error) {
     return NextResponse.json(
