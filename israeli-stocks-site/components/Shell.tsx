@@ -76,7 +76,7 @@ export default function Shell({
 
       {/* ── Categories bar (below navbar, stocks page only, mobile) ── */}
       {page === 'stocks' && (
-        <div className="bg-panel border-b border-border px-4 py-1.5 sticky top-[44px] z-50 md:hidden">
+        <div className="bg-panel border-b border-border px-4 py-1.5 sticky top-[44px] z-50">
           <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
         </div>
       )}
