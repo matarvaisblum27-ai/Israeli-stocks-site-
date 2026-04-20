@@ -68,14 +68,18 @@ export default function Shell({
             {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
           </span>
         </div>
-        {/* Left side (RTL): categories button (mobile) + author */}
+        {/* Left side (RTL): author */}
         <div className="flex items-center gap-3">
-          {page === 'stocks' && (
-            <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
-          )}
           <div className="text-[11px] text-muted">שלומי ארדן</div>
         </div>
       </nav>
+
+      {/* ── Categories bar (below navbar, stocks page only, mobile) ── */}
+      {page === 'stocks' && (
+        <div className="bg-panel border-b border-border px-4 py-1.5 sticky top-[44px] z-50 md:hidden">
+          <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
+        </div>
+      )}
 
       {/* ── Dropdown menu ── */}
       {menuOpen && (
@@ -343,37 +347,43 @@ function EnrichmentPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load video list, then fetch titles from YouTube oEmbed
+    // Load video list, then try to fetch titles
     fetch('/data/videos.json')
       .then((r) => r.json())
       .then(async (vids: VideoItem[]) => {
-        // Fetch titles in parallel from noembed (CORS-friendly)
-        const withTitles = await Promise.all(
-          vids.map(async (v) => {
-            try {
-              const res = await fetch(
-                `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v.id}`
-              );
-              const data = await res.json();
-              return { ...v, title: data.title || v.title || '' };
-            } catch {
-              return v;
-            }
-          })
-        );
-
-        // Filter out excluded videos
-        const filtered = withTitles.filter((v) => !v.title || !isExcluded(v.title));
-
-        // Sort: priority (podcasts) first, then rest
+        // Show videos immediately (without titles), then fetch titles in background
+        const filtered = vids.filter((v) => !v.title || !isExcluded(v.title));
         filtered.sort((a, b) => {
           if (a.priority && !b.priority) return -1;
           if (!a.priority && b.priority) return 1;
           return 0;
         });
-
         setVideos(filtered);
         setLoading(false);
+
+        // Fetch titles in parallel from noembed (CORS-friendly), with timeout
+        const withTitles = await Promise.all(
+          filtered.map(async (v) => {
+            if (v.title) return v;
+            try {
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 4000);
+              const res = await fetch(
+                `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${v.id}`,
+                { signal: controller.signal }
+              );
+              clearTimeout(timeout);
+              const data = await res.json();
+              const title = data.title || '';
+              if (title && isExcluded(title)) return null; // mark for removal
+              return { ...v, title };
+            } catch {
+              return v;
+            }
+          })
+        );
+        const finalVideos = withTitles.filter((v): v is VideoItem => v !== null);
+        setVideos(finalVideos);
       })
       .catch(() => setLoading(false));
   }, []);
@@ -421,6 +431,8 @@ function EnrichmentPage() {
                 src={`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`}
                 alt={v.title || 'סרטון'}
                 className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+                loading="lazy"
+                onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${v.id}/default.jpg`; }}
               />
               {/* Play button overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
@@ -440,7 +452,7 @@ function EnrichmentPage() {
             {/* Title */}
             <div className="p-3">
               <div className="text-sm font-medium text-slate-200 line-clamp-2 leading-relaxed">
-                {v.title || 'טוען...'}
+                {v.title || (v.priority ? 'פודקאסט שנתי' : 'סרטון')}
               </div>
             </div>
           </div>

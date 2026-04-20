@@ -105,7 +105,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory' | 'interesting'>('categories');
+  const [mode, setMode] = useState<'categories' | 'company' | 'intro' | 'merge' | 'addCompany' | 'addCategory' | 'interesting' | 'videos'>('categories');
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
@@ -121,9 +121,87 @@ export default function AdminDashboard() {
   const [selectedInterestingYear, setSelectedInterestingYear] = useState<string | null>(null);
   const [interestingData, setInterestingData] = useState<InterestingData>({ preamble: '', companies: [] });
 
+  // Videos
+  const [adminVideos, setAdminVideos] = useState<Array<{ id: string; title: string; priority: boolean }>>([]);
+  const [videosLoading, setVideosLoading] = useState(false);
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [newVideoPriority, setNewVideoPriority] = useState(false);
+
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
   }, []);
+
+  /* ─── Load videos ─── */
+  const loadVideos = useCallback(async () => {
+    setVideosLoading(true);
+    try {
+      const res = await fetch('/api/admin/videos');
+      const data = await res.json();
+      if (Array.isArray(data)) setAdminVideos(data);
+    } catch {
+      showToast('שגיאה בטעינת סרטונים', 'error');
+    } finally {
+      setVideosLoading(false);
+    }
+  }, [showToast]);
+
+  const addVideo = useCallback(async (url: string, priority: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, priority }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      showToast('סרטון נוסף בהצלחה', 'success');
+      setNewVideoUrl('');
+      setNewVideoPriority(false);
+      loadVideos();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      showToast(msg === 'Video already exists' ? 'הסרטון כבר קיים' : `שגיאה: ${msg}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }, [showToast, loadVideos]);
+
+  const deleteVideo = useCallback(async (id: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setAdminVideos((prev) => prev.filter((v) => v.id !== id));
+      showToast('סרטון הוסר', 'success');
+    } catch {
+      showToast('שגיאה במחיקת סרטון', 'error');
+    } finally {
+      setSaving(false);
+    }
+  }, [showToast]);
+
+  const toggleVideoPriority = useCallback(async (id: string, priority: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, priority }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setAdminVideos((prev) => prev.map((v) => v.id === id ? { ...v, priority } : v));
+      showToast('עודכן', 'success');
+    } catch {
+      showToast('שגיאה בעדכון', 'error');
+    } finally {
+      setSaving(false);
+    }
+  }, [showToast]);
 
   /* ─── Load categories ─── */
   useEffect(() => {
@@ -715,6 +793,25 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* 🎬 Videos */}
+      <button
+        onClick={() => {
+          setSelectedCatIdx(null);
+          setSelectedCompanyIdx(null);
+          setSelectedInterestingYear(null);
+          setMode('videos');
+          setMobileSidebar(false);
+          loadVideos();
+        }}
+        className={`w-full text-right px-3 py-2 rounded-lg mb-3 text-sm transition-colors ${
+          mode === 'videos'
+            ? 'bg-red-500/20 text-red-400'
+            : 'text-red-300/70 hover:bg-slate-800'
+        }`}
+      >
+        🎬 סרטוני העשרה
+      </button>
+
       {/* הקדמה */}
       {categories.filter(c => c.name.includes('הקדמה')).map((cat) => {
         const catIdx = categories.indexOf(cat);
@@ -950,6 +1047,119 @@ export default function AdminDashboard() {
               onCreateYear={createInterestingYear}
               onBack={() => { setSelectedInterestingYear(null); setMode('categories'); }}
             />
+          )}
+
+          {/* ── Videos mode ── */}
+          {mode === 'videos' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-100">🎬 ניהול סרטוני העשרה</h2>
+                <span className="text-sm text-slate-500">{adminVideos.length} סרטונים</span>
+              </div>
+
+              {/* Add video form */}
+              <div className="p-4 rounded-xl mb-6" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+                <div className="text-sm text-slate-300 mb-3 font-medium">הוסף סרטון חדש</div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={newVideoUrl}
+                    onChange={(e) => setNewVideoUrl(e.target.value)}
+                    placeholder="הדבק קישור YouTube כאן..."
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
+                    dir="ltr"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newVideoUrl.trim()) addVideo(newVideoUrl, newVideoPriority);
+                    }}
+                  />
+                  <label className="flex items-center gap-2 text-sm text-amber-400 cursor-pointer whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={newVideoPriority}
+                      onChange={(e) => setNewVideoPriority(e.target.checked)}
+                      className="accent-amber-500"
+                    />
+                    פודקאסט שנתי
+                  </label>
+                  <button
+                    onClick={() => newVideoUrl.trim() && addVideo(newVideoUrl, newVideoPriority)}
+                    disabled={saving || !newVideoUrl.trim()}
+                    className="px-5 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    + הוסף
+                  </button>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-2">
+                  תומך בפורמטים: youtube.com/watch?v=..., youtu.be/..., youtube.com/shorts/...
+                </div>
+              </div>
+
+              {/* Video list */}
+              {videosLoading ? (
+                <div className="text-slate-400 text-sm">טוען סרטונים...</div>
+              ) : (
+                <div className="space-y-2">
+                  {adminVideos.map((v) => (
+                    <div
+                      key={v.id}
+                      className="flex items-center gap-3 p-3 rounded-xl transition-colors"
+                      style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+                    >
+                      {/* Thumbnail */}
+                      <img
+                        src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
+                        alt=""
+                        className="w-28 h-16 object-cover rounded-lg flex-shrink-0"
+                      />
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-slate-200 truncate" dir="ltr">
+                          {v.id}
+                        </div>
+                        {v.title && (
+                          <div className="text-xs text-slate-500 truncate">{v.title}</div>
+                        )}
+                        {v.priority && (
+                          <span className="inline-block mt-1 text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">
+                            פודקאסט שנתי
+                          </span>
+                        )}
+                      </div>
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => toggleVideoPriority(v.id, !v.priority)}
+                          disabled={saving}
+                          className={`text-xs px-2 py-1 rounded-lg transition-colors ${
+                            v.priority
+                              ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
+                              : 'bg-slate-800 text-slate-500 hover:text-amber-400'
+                          }`}
+                          title={v.priority ? 'הסר תיוג פודקאסט' : 'סמן כפודקאסט שנתי'}
+                        >
+                          ⭐
+                        </button>
+                        <a
+                          href={`https://www.youtube.com/watch?v=${v.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs px-2 py-1 rounded-lg bg-slate-800 text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          ▶
+                        </a>
+                        <button
+                          onClick={() => { if (confirm('למחוק את הסרטון?')) deleteVideo(v.id); }}
+                          disabled={saving}
+                          className="text-xs px-2 py-1 rounded-lg bg-slate-800 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* ── Category selected ── */}
