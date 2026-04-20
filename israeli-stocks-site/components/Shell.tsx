@@ -52,37 +52,34 @@ export default function Shell({
   return (
     <div className="min-h-screen flex flex-col">
       {/* ── Top navbar ── */}
-      <nav className="bg-panel border-b border-border px-4 py-2 sticky top-0 z-50">
-        <div className="flex items-center justify-between">
-          {/* Right side (RTL): hamburger + title */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex flex-col justify-center items-center w-8 h-8 gap-[5px] rounded-md hover:bg-slate-800 transition-colors"
-              aria-label="תפריט"
-            >
-              <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
-              <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
-              <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
-            </button>
-            <span className="text-sm font-bold text-slate-100">
-              {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
-            </span>
-          </div>
-          {/* Left side (RTL): author */}
+      <nav className="bg-panel border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-50">
+        {/* Right side (RTL): hamburger + title */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex flex-col justify-center items-center w-8 h-8 gap-[5px] rounded-md hover:bg-slate-800 transition-colors"
+            aria-label="תפריט"
+          >
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-5 h-[2px] bg-slate-300 transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+          </button>
+          <span className="text-sm font-bold text-slate-100">
+            {page === 'stocks' ? 'סקירת מניות ישראל' : 'העשרה'}
+          </span>
+        </div>
+        {/* Left side (RTL): categories button (mobile) + author */}
+        <div className="flex items-center gap-3">
+          {page === 'stocks' && (
+            <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
+          )}
           <div className="text-[11px] text-muted">שלומי ארדן</div>
         </div>
-        {/* Categories ribbon — mobile only, below nav row */}
-        {page === 'stocks' && (
-          <div className="mt-2 lg:hidden">
-            <MobileCategoriesButton onOpen={() => setMobileSidebarOpen(true)} />
-          </div>
-        )}
       </nav>
 
       {/* ── Dropdown menu ── */}
       {menuOpen && (
-        <div className="absolute top-[42px] right-4 z-[60] bg-panel border border-border rounded-xl shadow-xl overflow-hidden w-56">
+        <div className="absolute top-[44px] right-4 z-[60] bg-panel border border-border rounded-xl shadow-xl overflow-hidden w-56">
           <button
             onClick={() => switchPage('stocks')}
             className={`w-full text-right px-4 py-3 text-sm flex items-center gap-2 ${
