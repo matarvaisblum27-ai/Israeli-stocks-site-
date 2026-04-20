@@ -23,12 +23,13 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       // Styles: self + inline (Tailwind generates inline styles)
       "style-src 'self' 'unsafe-inline'",
-      // Images: self + known WordPress/Google image CDNs + data URIs
-      "img-src 'self' data: https://i0.wp.com https://shlomiardan.com https://lh7-us.googleusercontent.com https://lh3.googleusercontent.com",
-      // Fetch/XHR: self + Yahoo Finance API (for stock data)
-      "connect-src 'self' https://query1.finance.yahoo.com https://query2.finance.yahoo.com",
+      // Images: self + known WordPress/Google image CDNs + YouTube thumbnails + data URIs
+      "img-src 'self' data: https://i0.wp.com https://shlomiardan.com https://lh7-us.googleusercontent.com https://lh3.googleusercontent.com https://img.youtube.com",
+      // Fetch/XHR: self + Yahoo Finance API (for stock data) + noembed (YouTube titles)
+      "connect-src 'self' https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://noembed.com",
       "font-src 'self'",
-      "frame-src 'none'",
+      // Frames: YouTube embed player
+      "frame-src https://www.youtube.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
