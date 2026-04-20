@@ -37,11 +37,16 @@ export default function SA20Chart() {
   const [stocksOpen, setStocksOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/stock-index')
-      .then((r) => { if (!r.ok) throw new Error('API error'); return r.json(); })
-      .then((d) => setData(d))
-      .catch(() => setError('לא ניתן לטעון נתוני מדד'))
-      .finally(() => setLoading(false));
+    function loadData() {
+      fetch('/api/stock-index')
+        .then((r) => { if (!r.ok) throw new Error('API error'); return r.json(); })
+        .then((d) => setData(d))
+        .catch(() => setError('לא ניתן לטעון נתוני מדד'))
+        .finally(() => setLoading(false));
+    }
+    loadData();
+    const interval = setInterval(loadData, 5 * 60 * 1000); // refresh every 5 minutes
+    return () => clearInterval(interval);
   }, []);
 
   /* Build all series */
