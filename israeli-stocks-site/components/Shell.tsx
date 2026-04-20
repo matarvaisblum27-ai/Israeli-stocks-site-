@@ -183,17 +183,18 @@ function StocksPage({
           const res = await fetch(`/data/cat-${cat.position ?? i}.json?v=${Date.now()}`);
           const companies = await res.json();
           const arr = Array.isArray(companies) ? companies : companies.companies || [];
-          return arr.map((c: any) => {
-            const years = Object.keys(c.reviews || {}).sort().reverse();
-            const latestHtml = years.length > 0 ? (typeof c.reviews[years[0]] === 'string' ? c.reviews[years[0]] : Array.isArray(c.reviews[years[0]]) ? c.reviews[years[0]].join('') : '') : '';
-            return {
-              name: c.name,
-              catName: cat.name,
-              catIdx: categories.indexOf(cat),
-              html: latestHtml,
-              status: detectStatus(latestHtml),
-            };
-          });
+          return arr
+            .filter((c: any) => c.reviews && c.reviews['2026'])
+            .map((c: any) => {
+              const html = typeof c.reviews['2026'] === 'string' ? c.reviews['2026'] : Array.isArray(c.reviews['2026']) ? c.reviews['2026'].join('') : '';
+              return {
+                name: c.name,
+                catName: cat.name,
+                catIdx: categories.indexOf(cat),
+                html,
+                status: detectStatus(html),
+              };
+            });
         } catch {
           return [];
         }
@@ -313,51 +314,6 @@ function StocksPage({
           ))}
         </div>
       )}
-      {/* Status filter buttons */}
-      <div className="mb-3">
-        <div className="text-[11px] text-muted px-1 mb-1.5">סינון לפי דירוג</div>
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => {
-              if (statusFilter === 'מעניינת') { setStatusFilter(null); setView({ type: 'intro' }); }
-              else { setStatusFilter('מעניינת'); }
-              onMobileSidebarClose();
-            }}
-            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
-              statusFilter === 'מעניינת' ? 'bg-emerald-500/20 text-emerald-400' : 'text-emerald-400/70 hover:bg-slate-800'
-            }`}
-          >
-            <span className="text-[11px] tabular-nums bg-emerald-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.interesting}</span>
-            <span>● מעניינות</span>
-          </button>
-          <button
-            onClick={() => {
-              if (statusFilter === 'למעקב') { setStatusFilter(null); setView({ type: 'intro' }); }
-              else { setStatusFilter('למעקב'); }
-              onMobileSidebarClose();
-            }}
-            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
-              statusFilter === 'למעקב' ? 'bg-amber-500/20 text-amber-400' : 'text-amber-400/70 hover:bg-slate-800'
-            }`}
-          >
-            <span className="text-[11px] tabular-nums bg-amber-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.watch}</span>
-            <span>● למעקב</span>
-          </button>
-          <button
-            onClick={() => {
-              if (statusFilter === 'לא עוברת') { setStatusFilter(null); setView({ type: 'intro' }); }
-              else { setStatusFilter('לא עוברת'); }
-              onMobileSidebarClose();
-            }}
-            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
-              statusFilter === 'לא עוברת' ? 'bg-red-500/20 text-red-400' : 'text-red-400/70 hover:bg-slate-800'
-            }`}
-          >
-            <span className="text-[11px] tabular-nums bg-red-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.notPassing}</span>
-            <span>● לא עוברות</span>
-          </button>
-        </div>
-      </div>
       <div className="text-[11px] text-muted px-1 mb-1 border-t border-border pt-2">קטגוריות</div>
       {filteredCategories
         .filter(({ cat }) => !cat.name.includes('הקדמה'))
@@ -376,7 +332,47 @@ function StocksPage({
     </>
   );
 
+  const totalCompanies = statusCounts.interesting + statusCounts.watch + statusCounts.notPassing;
+
   return (
+    <div className="flex flex-col flex-1">
+      {/* ── Status filter ribbon ── */}
+      <div className="bg-panel border-b border-border px-4 py-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm">
+        <button
+          onClick={() => statusFilter === 'מעניינת' ? setStatusFilter(null) : setStatusFilter('מעניינת')}
+          className={`flex items-center gap-1.5 py-1 px-2 rounded-lg transition-colors ${
+            statusFilter === 'מעניינת' ? 'bg-emerald-500/20' : 'hover:bg-slate-800/50'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="text-slate-300">מעניינות</span>
+          <span className="font-bold text-emerald-400 tabular-nums">{statusCounts.interesting}</span>
+        </button>
+        <button
+          onClick={() => statusFilter === 'למעקב' ? setStatusFilter(null) : setStatusFilter('למעקב')}
+          className={`flex items-center gap-1.5 py-1 px-2 rounded-lg transition-colors ${
+            statusFilter === 'למעקב' ? 'bg-amber-500/20' : 'hover:bg-slate-800/50'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <span className="text-slate-300">למעקב</span>
+          <span className="font-bold text-amber-400 tabular-nums">{statusCounts.watch}</span>
+        </button>
+        <button
+          onClick={() => statusFilter === 'לא עוברת' ? setStatusFilter(null) : setStatusFilter('לא עוברת')}
+          className={`flex items-center gap-1.5 py-1 px-2 rounded-lg transition-colors ${
+            statusFilter === 'לא עוברת' ? 'bg-red-500/20' : 'hover:bg-slate-800/50'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-slate-400" />
+          <span className="text-slate-300">לא עוברות</span>
+          <span className="font-bold text-slate-400 tabular-nums">{statusCounts.notPassing}</span>
+        </button>
+        <div className="text-slate-500 text-xs">
+          סה״כ <span className="text-slate-400 font-semibold">{totalCompanies}</span> חברות
+        </div>
+      </div>
+
     <div className="flex flex-1 relative">
       {/* ── Mobile drawer overlay ── */}
       {mobileSidebarOpen && (
@@ -467,6 +463,7 @@ function StocksPage({
           />
         )}
       </main>
+    </div>
     </div>
   );
 }
