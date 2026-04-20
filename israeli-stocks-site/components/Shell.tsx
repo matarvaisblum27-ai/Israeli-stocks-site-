@@ -123,6 +123,19 @@ export default function Shell({
   );
 }
 
+/* ── Status detection (same logic as admin page) ── */
+type CompanyStatus = 'מעניינת' | 'למעקב' | 'לא עוברת' | null;
+
+function detectStatus(html: string): CompanyStatus {
+  if (!html) return null;
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const tail = text.slice(-150);
+  if (tail.includes('לא עוברת')) return 'לא עוברת';
+  if (tail.includes('למעקב')) return 'למעקב';
+  if (tail.includes('מעניינת')) return 'מעניינת';
+  return null;
+}
+
 /* ════════════════════════════════════════════════════════════════
    Stocks Page (existing functionality)
    ════════════════════════════════════════════════════════════════ */
@@ -148,6 +161,10 @@ function StocksPage({
   const [searchIndex, setSearchIndex] = useState<Array<{ name: string; catName: string; catPos: number; catIdx: number }>>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<CompanyStatus>(null);
+  const [statusCompanies, setStatusCompanies] = useState<Array<{name: string; catName: string; catIdx: number; html: string; status: CompanyStatus}>>([]);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [statusCounts, setStatusCounts] = useState<{interesting: number; watch: number; notPassing: number}>({interesting: 0, watch: 0, notPassing: 0});
 
   // Load search index once (cache-bust to always get fresh data after deploy)
   useEffect(() => {
@@ -156,6 +173,41 @@ function StocksPage({
       .then(setSearchIndex)
       .catch(() => {});
   }, []);
+
+  // Load all category files and build status index
+  useEffect(() => {
+    const nonIntroCats = categories.filter(c => !c.name.includes('הקדמה'));
+    Promise.all(
+      nonIntroCats.map(async (cat, i) => {
+        try {
+          const res = await fetch(`/data/cat-${cat.position ?? i}.json?v=${Date.now()}`);
+          const companies = await res.json();
+          const arr = Array.isArray(companies) ? companies : companies.companies || [];
+          return arr.map((c: any) => {
+            const years = Object.keys(c.reviews || {}).sort().reverse();
+            const latestHtml = years.length > 0 ? (typeof c.reviews[years[0]] === 'string' ? c.reviews[years[0]] : Array.isArray(c.reviews[years[0]]) ? c.reviews[years[0]].join('') : '') : '';
+            return {
+              name: c.name,
+              catName: cat.name,
+              catIdx: categories.indexOf(cat),
+              html: latestHtml,
+              status: detectStatus(latestHtml),
+            };
+          });
+        } catch {
+          return [];
+        }
+      })
+    ).then(results => {
+      const all = results.flat();
+      setStatusCompanies(all);
+      setStatusCounts({
+        interesting: all.filter(c => c.status === 'מעניינת').length,
+        watch: all.filter(c => c.status === 'למעקב').length,
+        notPassing: all.filter(c => c.status === 'לא עוברת').length,
+      });
+    });
+  }, [categories]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) return [];
@@ -237,7 +289,7 @@ function StocksPage({
         )}
       </div>
       <button
-        onClick={() => { setView({ type: 'intro' }); setFilter(''); onMobileSidebarClose(); }}
+        onClick={() => { setView({ type: 'intro' }); setFilter(''); setStatusFilter(null); onMobileSidebarClose(); }}
         className={`w-full text-right px-3 py-2 rounded-md mb-2 text-sm font-semibold ${
           view.type === 'intro' ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
         }`}
@@ -250,7 +302,7 @@ function StocksPage({
           {interestingYears.map((y) => (
             <button
               key={y}
-              onClick={() => { setView({ type: 'interesting', year: y }); setFilter(''); onMobileSidebarClose(); }}
+              onClick={() => { setView({ type: 'interesting', year: y }); setFilter(''); setStatusFilter(null); onMobileSidebarClose(); }}
               className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm ${
                 view.type === 'interesting' && view.year === y
                   ? 'bg-accent text-white' : 'text-amber-300 hover:bg-slate-800'
@@ -261,13 +313,58 @@ function StocksPage({
           ))}
         </div>
       )}
+      {/* Status filter buttons */}
+      <div className="mb-3">
+        <div className="text-[11px] text-muted px-1 mb-1.5">סינון לפי דירוג</div>
+        <div className="flex flex-col gap-1">
+          <button
+            onClick={() => {
+              if (statusFilter === 'מעניינת') { setStatusFilter(null); setView({ type: 'intro' }); }
+              else { setStatusFilter('מעניינת'); }
+              onMobileSidebarClose();
+            }}
+            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
+              statusFilter === 'מעניינת' ? 'bg-emerald-500/20 text-emerald-400' : 'text-emerald-400/70 hover:bg-slate-800'
+            }`}
+          >
+            <span className="text-[11px] tabular-nums bg-emerald-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.interesting}</span>
+            <span>● מעניינות</span>
+          </button>
+          <button
+            onClick={() => {
+              if (statusFilter === 'למעקב') { setStatusFilter(null); setView({ type: 'intro' }); }
+              else { setStatusFilter('למעקב'); }
+              onMobileSidebarClose();
+            }}
+            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
+              statusFilter === 'למעקב' ? 'bg-amber-500/20 text-amber-400' : 'text-amber-400/70 hover:bg-slate-800'
+            }`}
+          >
+            <span className="text-[11px] tabular-nums bg-amber-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.watch}</span>
+            <span>● למעקב</span>
+          </button>
+          <button
+            onClick={() => {
+              if (statusFilter === 'לא עוברת') { setStatusFilter(null); setView({ type: 'intro' }); }
+              else { setStatusFilter('לא עוברת'); }
+              onMobileSidebarClose();
+            }}
+            className={`w-full text-right px-3 py-2 rounded-md text-sm flex justify-between items-center transition-colors ${
+              statusFilter === 'לא עוברת' ? 'bg-red-500/20 text-red-400' : 'text-red-400/70 hover:bg-slate-800'
+            }`}
+          >
+            <span className="text-[11px] tabular-nums bg-red-500/15 px-1.5 py-0.5 rounded-full">{statusCounts.notPassing}</span>
+            <span>● לא עוברות</span>
+          </button>
+        </div>
+      </div>
       <div className="text-[11px] text-muted px-1 mb-1 border-t border-border pt-2">קטגוריות</div>
       {filteredCategories
         .filter(({ cat }) => !cat.name.includes('הקדמה'))
         .map(({ cat, idx }) => (
           <button
             key={cat.id}
-            onClick={() => { setView({ type: 'cat', idx }); setFilter(''); onMobileSidebarClose(); }}
+            onClick={() => { setView({ type: 'cat', idx }); setFilter(''); setStatusFilter(null); onMobileSidebarClose(); }}
             className={`w-full text-right px-3 py-2 rounded-md mb-1 text-sm flex justify-between items-center ${
               view.type === 'cat' && view.idx === idx
                 ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-800'
@@ -308,14 +405,49 @@ function StocksPage({
       <main className="flex-1 p-4 lg:p-6 max-w-5xl mx-auto w-full min-w-0">
         {loading && <div className="text-muted text-sm">טוען...</div>}
 
-        {view.type === 'intro' && intro && (
+        {statusFilter && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => setStatusFilter(null)}
+                className="text-sm text-muted hover:text-slate-300 transition-colors"
+              >
+                ✕ נקה סינון
+              </button>
+              <h2 className="text-xl font-bold text-slate-100">
+                {statusFilter === 'מעניינת' && '⭐ חברות מעניינות'}
+                {statusFilter === 'למעקב' && '👁 חברות למעקב'}
+                {statusFilter === 'לא עוברת' && '✗ חברות שלא עוברות'}
+              </h2>
+            </div>
+            <div className="text-sm text-muted mb-4">
+              {statusCompanies.filter(c => c.status === statusFilter).length} חברות
+            </div>
+            <div className="space-y-3">
+              {statusCompanies
+                .filter(c => c.status === statusFilter)
+                .sort((a, b) => a.name.localeCompare(b.name, 'he'))
+                .map((c) => (
+                  <div key={c.name + c.catName} className="bg-panel border border-border rounded-xl overflow-hidden">
+                    <StatusCompanyCard company={c} onNavigate={(catIdx, name) => {
+                      setStatusFilter(null);
+                      setView({ type: 'cat', idx: catIdx });
+                      setFilter(name);
+                    }} />
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {!statusFilter && view.type === 'intro' && intro && (
           <>
             <IntroView intro={intro} />
             <SA20Chart />
           </>
         )}
 
-        {view.type === 'cat' && !loading && (
+        {!statusFilter && view.type === 'cat' && !loading && (
           <CategoryView
             category={categories[view.idx]}
             companies={companies}
@@ -324,7 +456,7 @@ function StocksPage({
           />
         )}
 
-        {view.type === 'interesting' && !loading && (
+        {!statusFilter && view.type === 'interesting' && !loading && (
           <InterestingView
             year={view.year}
             preamble={interesting.preamble}
@@ -656,6 +788,54 @@ function InterestingCard({ entry }: { entry: InterestingEntry }) {
         />
       )}
     </div>
+  );
+}
+
+function StatusCompanyCard({ company, onNavigate }: {
+  company: { name: string; catName: string; catIdx: number; html: string; status: CompanyStatus };
+  onNavigate: (catIdx: number, name: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const preview = company.html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 220);
+  const statusColor = company.status === 'מעניינת' ? 'text-emerald-400 bg-emerald-700/40'
+    : company.status === 'למעקב' ? 'text-amber-400 bg-amber-700/40'
+    : 'text-red-400 bg-red-700/40';
+
+  return (
+    <>
+      <div
+        className="p-4 cursor-pointer flex justify-between items-start gap-3"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-slate-100 mb-1">
+            {company.name}{' '}
+            <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusColor}`}>
+              {company.status === 'מעניינת' ? 'מעניינת' : company.status}
+            </span>
+          </div>
+          <div className="text-[11px] text-muted mb-1">{company.catName}</div>
+          {!open && <div className="text-xs text-muted truncate">{preview}...</div>}
+        </div>
+        <div className="text-muted text-lg">{open ? '▴' : '▾'}</div>
+      </div>
+      {open && (
+        <div className="border-t border-border">
+          <div
+            className="review-body px-5 pb-4 pt-4"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(company.html) }}
+          />
+          <div className="px-5 pb-3">
+            <button
+              onClick={(e) => { e.stopPropagation(); onNavigate(company.catIdx, company.name); }}
+              className="text-xs text-accent hover:underline"
+            >
+              עבור לקטגוריה: {company.catName} →
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
