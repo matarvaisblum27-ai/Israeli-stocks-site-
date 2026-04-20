@@ -147,7 +147,8 @@ export default function SA20Chart() {
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-start justify-between">
           <div className="text-[10px] text-slate-500 mt-1">
-            מתחילת המדד 06.04.2026 · בסיס 1,000 נקודות
+            <div>מתחילת המדד 06.04.2026 · בסיס 1,000 נקודות</div>
+            <div className="mt-0.5">הנתונים מתעדכנים פעם ביום לאחר סגירת המסחר</div>
           </div>
           <div className="text-right">
             <div className="flex items-center justify-end gap-2 mb-1">
