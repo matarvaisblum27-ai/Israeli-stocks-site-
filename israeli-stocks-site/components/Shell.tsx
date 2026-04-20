@@ -20,6 +20,7 @@ interface VideoItem {
   id: string;
   title: string;
   priority: boolean;
+  addedAt?: string;
 }
 
 /* ── Excluded video keywords ── */
@@ -353,10 +354,14 @@ function EnrichmentPage() {
       .then(async (vids: VideoItem[]) => {
         // Show videos immediately (without titles), then fetch titles in background
         const filtered = vids.filter((v) => !v.title || !isExcluded(v.title));
+        // Sort: priority first, then newest first by addedAt
         filtered.sort((a, b) => {
           if (a.priority && !b.priority) return -1;
           if (!a.priority && b.priority) return 1;
-          return 0;
+          // Within same priority group, newest first
+          const aTime = a.addedAt || '2000-01-01';
+          const bTime = b.addedAt || '2000-01-01';
+          return bTime.localeCompare(aTime);
         });
         setVideos(filtered);
         setLoading(false);

@@ -9,6 +9,7 @@ interface VideoItem {
   id: string;
   title: string;
   priority: boolean;
+  addedAt?: string;
 }
 
 function readLocal(): VideoItem[] {
@@ -91,8 +92,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Video already exists', id: videoId }, { status: 409 });
     }
 
-    // Add new video (at beginning so it appears first)
-    videos.unshift({ id: videoId, title: '', priority: !!priority });
+    // Add new video with timestamp
+    videos.unshift({ id: videoId, title: '', priority: !!priority, addedAt: new Date().toISOString() });
 
     await writeMultipleFiles(
       [{ path: VIDEOS_PATH, content: JSON.stringify(videos, null, 2) }],
