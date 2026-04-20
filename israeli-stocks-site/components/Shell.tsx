@@ -129,7 +129,9 @@ type CompanyStatus = 'מעניינת' | 'למעקב' | 'לא עוברת' | null;
 function detectStatus(html: string): CompanyStatus {
   if (!html) return null;
   const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  const tail = text.slice(-150);
+  const tail = text.slice(-200);
+  // Handle typos like "ל א עוברת" (ל outside <strong> tag)
+  if (/ל\s*א\s*עוברת/.test(tail)) return 'לא עוברת';
   if (tail.includes('לא עוברת')) return 'לא עוברת';
   if (tail.includes('למעקב')) return 'למעקב';
   if (tail.includes('מעניינת')) return 'מעניינת';
@@ -176,45 +178,71 @@ function StocksPage({
 
   // Load all category files and build status index
   useEffect(() => {
-    const nonIntroCats = categories.filter(c => !c.name.includes('הקדמה'));
-    Promise.all(
-      nonIntroCats.map(async (cat, i) => {
-        try {
-          const res = await fetch(`/data/cat-${cat.position ?? i}.json?v=${Date.now()}`);
-          const companies = await res.json();
-          const arr = Array.isArray(companies) ? companies : companies.companies || [];
-          return arr
-            .filter((c: any) => c.reviews && c.reviews['2026'])
-            .map((c: any) => {
-              const html2026 = typeof c.reviews['2026'] === 'string' ? c.reviews['2026'] : Array.isArray(c.reviews['2026']) ? c.reviews['2026'].join('') : '';
-              // Collect all years
-              const reviews: Record<string, string> = {};
-              for (const year of Object.keys(c.reviews || {}).sort().reverse()) {
-                const val = c.reviews[year];
-                reviews[year] = typeof val === 'string' ? val : Array.isArray(val) ? val.join('') : '';
-              }
-              return {
-                name: c.name,
-                catName: cat.name,
-                catIdx: categories.indexOf(cat),
-                html: html2026,
-                status: detectStatus(html2026),
-                reviews,
-              };
-            });
-        } catch {
-          return [];
+    async function buildStatusIndex() {
+      // Load interesting-2026 list to override status for curated stocks
+      let interestingNames = new Set<string>();
+      try {
+        const intRes = await fetch(`/data/interesting-2026.json?v=${Date.now()}`);
+        const intData = await intRes.json();
+        if (intData.companies) {
+          interestingNames = new Set(intData.companies.map((c: any) => c.name));
         }
-      })
-    ).then(results => {
+      } catch {}
+
+      const nonIntroCats = categories.filter(c => !c.name.includes('הקדמה'));
+      const results = await Promise.all(
+        nonIntroCats.map(async (cat, i) => {
+          try {
+            const res = await fetch(`/data/cat-${cat.position ?? i}.json?v=${Date.now()}`);
+            const companies = await res.json();
+            const arr = Array.isArray(companies) ? companies : companies.companies || [];
+            return arr
+              .filter((c: any) => c.reviews && c.reviews['2026'])
+              .map((c: any) => {
+                const html2026 = typeof c.reviews['2026'] === 'string' ? c.reviews['2026'] : Array.isArray(c.reviews['2026']) ? c.reviews['2026'].join('') : '';
+                // Collect all years
+                const reviews: Record<string, string> = {};
+                for (const year of Object.keys(c.reviews || {}).sort().reverse()) {
+                  const val = c.reviews[year];
+                  reviews[year] = typeof val === 'string' ? val : Array.isArray(val) ? val.join('') : '';
+                }
+                // Use interesting-2026 list to override status for curated stocks
+                let status = detectStatus(html2026);
+                if (interestingNames.has(c.name)) {
+                  status = 'מעניינת';
+                }
+                return {
+                  name: c.name,
+                  catName: cat.name,
+                  catIdx: categories.indexOf(cat),
+                  html: html2026,
+                  status,
+                  reviews,
+                };
+              });
+          } catch {
+            return [];
+          }
+        })
+      );
+
       const all = results.flat();
-      setStatusCompanies(all);
-      setStatusCounts({
-        interesting: all.filter(c => c.status === 'מעניינת').length,
-        watch: all.filter(c => c.status === 'למעקב').length,
-        notPassing: all.filter(c => c.status === 'לא עוברת').length,
+      // Deduplicate by company name and filter out entries without a detected status
+      const seen = new Set<string>();
+      const unique = all.filter(c => {
+        if (seen.has(c.name)) return false;
+        seen.add(c.name);
+        return true;
       });
-    });
+      const withStatus = unique.filter(c => c.status !== null);
+      setStatusCompanies(unique);
+      setStatusCounts({
+        interesting: withStatus.filter(c => c.status === 'מעניינת').length,
+        watch: withStatus.filter(c => c.status === 'למעקב').length,
+        notPassing: withStatus.filter(c => c.status === 'לא עוברת').length,
+      });
+    }
+    buildStatusIndex();
   }, [categories]);
 
   const searchResults = useMemo(() => {
@@ -339,7 +367,7 @@ function StocksPage({
     </>
   );
 
-  const totalCompanies = statusCounts.interesting + statusCounts.watch + statusCounts.notPassing;
+  const totalCompanies = statusCompanies.length; // all unique companies with 2026 reviews
 
   return (
     <div className="flex flex-col flex-1">
