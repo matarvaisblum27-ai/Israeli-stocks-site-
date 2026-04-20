@@ -162,7 +162,7 @@ function StocksPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [statusFilter, setStatusFilter] = useState<CompanyStatus>(null);
-  const [statusCompanies, setStatusCompanies] = useState<Array<{name: string; catName: string; catIdx: number; html: string; status: CompanyStatus}>>([]);
+  const [statusCompanies, setStatusCompanies] = useState<Array<{name: string; catName: string; catIdx: number; html: string; status: CompanyStatus; reviews: Record<string, string>}>>([]);
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusCounts, setStatusCounts] = useState<{interesting: number; watch: number; notPassing: number}>({interesting: 0, watch: 0, notPassing: 0});
 
@@ -186,13 +186,20 @@ function StocksPage({
           return arr
             .filter((c: any) => c.reviews && c.reviews['2026'])
             .map((c: any) => {
-              const html = typeof c.reviews['2026'] === 'string' ? c.reviews['2026'] : Array.isArray(c.reviews['2026']) ? c.reviews['2026'].join('') : '';
+              const html2026 = typeof c.reviews['2026'] === 'string' ? c.reviews['2026'] : Array.isArray(c.reviews['2026']) ? c.reviews['2026'].join('') : '';
+              // Collect all years
+              const reviews: Record<string, string> = {};
+              for (const year of Object.keys(c.reviews || {}).sort().reverse()) {
+                const val = c.reviews[year];
+                reviews[year] = typeof val === 'string' ? val : Array.isArray(val) ? val.join('') : '';
+              }
               return {
                 name: c.name,
                 catName: cat.name,
                 catIdx: categories.indexOf(cat),
-                html,
-                status: detectStatus(html),
+                html: html2026,
+                status: detectStatus(html2026),
+                reviews,
               };
             });
         } catch {
@@ -789,14 +796,20 @@ function InterestingCard({ entry }: { entry: InterestingEntry }) {
 }
 
 function StatusCompanyCard({ company, onNavigate }: {
-  company: { name: string; catName: string; catIdx: number; html: string; status: CompanyStatus };
+  company: { name: string; catName: string; catIdx: number; html: string; status: CompanyStatus; reviews: Record<string, string> };
   onNavigate: (catIdx: number, name: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const years = Object.keys(company.reviews).sort().reverse();
+  const [selectedYear, setSelectedYear] = useState(years[0] || '2026');
   const preview = company.html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 220);
   const statusColor = company.status === 'מעניינת' ? 'text-emerald-400 bg-emerald-700/40'
     : company.status === 'למעקב' ? 'text-amber-400 bg-amber-700/40'
     : 'text-red-400 bg-red-700/40';
+
+  const currentHtml = company.reviews[selectedYear] || '';
+  const currentStatus = detectStatus(currentHtml);
+  const yearStatusColor = currentStatus === 'מעניינת' ? 'text-emerald-400' : currentStatus === 'למעקב' ? 'text-amber-400' : currentStatus === 'לא עוברת' ? 'text-red-400' : 'text-slate-500';
 
   return (
     <>
@@ -814,13 +827,45 @@ function StatusCompanyCard({ company, onNavigate }: {
           <div className="text-[11px] text-muted mb-1">{company.catName}</div>
           {!open && <div className="text-xs text-muted truncate">{preview}...</div>}
         </div>
-        <div className="text-muted text-lg">{open ? '▴' : '▾'}</div>
+        <div className="flex items-center gap-2">
+          {years.length > 1 && <span className="text-[10px] text-slate-600">{years.length} שנים</span>}
+          <span className="text-muted text-lg">{open ? '▴' : '▾'}</span>
+        </div>
       </div>
       {open && (
         <div className="border-t border-border">
+          {/* Year tabs */}
+          {years.length > 1 && (
+            <div className="flex gap-1 px-5 pt-3">
+              {years.map((y) => {
+                const ys = detectStatus(company.reviews[y]);
+                const dotColor = ys === 'מעניינת' ? 'bg-emerald-400' : ys === 'למעקב' ? 'bg-amber-400' : ys === 'לא עוברת' ? 'bg-red-400' : 'bg-slate-600';
+                return (
+                  <button
+                    key={y}
+                    onClick={(e) => { e.stopPropagation(); setSelectedYear(y); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                      selectedYear === y
+                        ? 'bg-accent text-white'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+                    {y}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {/* Status for selected year */}
+          {currentStatus && selectedYear !== years[0] && (
+            <div className={`px-5 pt-2 text-xs ${yearStatusColor}`}>
+              {currentStatus === 'מעניינת' ? '⭐ מעניינת' : currentStatus === 'למעקב' ? '👁 למעקב' : '✗ לא עוברת'} ב-{selectedYear}
+            </div>
+          )}
           <div
-            className="review-body px-5 pb-4 pt-4"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(company.html) }}
+            className="review-body px-5 pb-4 pt-3"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(currentHtml) }}
           />
           <div className="px-5 pb-3">
             <button
