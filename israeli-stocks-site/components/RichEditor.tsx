@@ -19,8 +19,8 @@ function MenuBar({ editor, onImageUpload }: { editor: ReturnType<typeof useEdito
   if (!editor) return null;
 
   const btn = (active: boolean) =>
-    `px-2 py-1 rounded text-xs transition-colors ${
-      active ? 'bg-blue-500 text-white' : 'text-slate-300 hover:bg-slate-700'
+    `px-2 py-1 rounded text-xs transition-colors duration-300 ${
+      active ? 'bg-accent text-white' : 'text-slate-300 hover:bg-slate-700'
     }`;
 
   return (
@@ -239,8 +239,8 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
 
   return (
     <div
-      className={`rounded-xl overflow-hidden transition-colors ${dragOver ? 'ring-2 ring-blue-400/60' : ''}`}
-      style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+      className={`rounded-2xl overflow-hidden transition-colors duration-300 ${dragOver ? 'ring-2 ring-accent/60' : ''}`}
+      style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
       onDragOver={(e) => {
         if (e.dataTransfer?.types?.includes('Files')) {
           e.preventDefault();
@@ -260,7 +260,7 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
         <div className="px-4 py-2 text-xs text-amber-400 bg-amber-500/10">מעלה תמונה...</div>
       )}
       {dragOver && (
-        <div className="px-4 py-2 text-xs text-blue-400 bg-blue-500/10 text-center">שחרר כדי להעלות תמונה 📷</div>
+        <div className="px-4 py-2 text-xs text-accent bg-accent/10 text-center">שחרר כדי להעלות תמונה 📷</div>
       )}
       <EditorContent editor={editor} />
       <input
@@ -279,13 +279,13 @@ export default function RichEditor({ content, onChange, dir = 'rtl' }: RichEdito
         .ProseMirror strong { font-weight: bold; }
         .ProseMirror em { font-style: italic; }
         .ProseMirror u { text-decoration: underline; }
-        .ProseMirror a { color: #60a5fa; text-decoration: underline; }
+        .ProseMirror a { color: #2997ff; text-decoration: underline; }
         .ProseMirror img { max-width: 100%; height: auto; border-radius: 8px; margin: 0.5em 0; cursor: pointer; }
-        .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #3b82f6; }
+        .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #2997ff; }
         .ProseMirror ul { list-style: disc; padding-right: 1.5em; }
         .ProseMirror ol { list-style: decimal; padding-right: 1.5em; }
         .ProseMirror li { margin: 0.25em 0; }
-        .ProseMirror blockquote { border-right: 3px solid #334155; padding-right: 1em; color: #94a3b8; }
+        .ProseMirror blockquote { border-right: 3px solid #3a3a3c; padding-right: 1em; color: #86868b; }
       `}</style>
     </div>
   );
