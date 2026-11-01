@@ -128,7 +128,7 @@ export default function SA20Chart() {
 
   if (loading) {
     return (
-      <div className="mt-8 bg-[#0c1425] border border-slate-700/50 rounded-2xl p-6">
+      <div className="card-depth rounded-[28px] p-6">
         <div className="text-slate-500 text-sm animate-pulse">טוען נתוני מדד SA-20...</div>
       </div>
     );
@@ -142,9 +142,9 @@ export default function SA20Chart() {
   const tooltipDate = tooltip ? dates[tooltip.idx] : null;
 
   return (
-    <div className="mt-8 bg-[#0c1425] border border-slate-700/50 rounded-2xl overflow-hidden">
+    <div className="card-depth rounded-[28px] overflow-hidden">
       {/* ── Header ── */}
-      <div className="px-5 pt-5 pb-3">
+      <div className="px-6 md:px-8 pt-7 pb-4">
         <div className="flex items-start justify-between">
           <div className="text-[10px] text-slate-500 mt-1">
             <div>מתחילת המדד 06.04.2026 · בסיס 1,000 נקודות</div>
@@ -152,8 +152,7 @@ export default function SA20Chart() {
           </div>
           <div className="text-right">
             <div className="flex items-center justify-end gap-2 mb-1">
-              <span className="text-lg font-bold text-slate-100">SA-20 מדד</span>
-              <span className="text-xl">📈</span>
+              <span className="text-2xl font-bold tracking-tight text-ink">מדד SA-20</span>
             </div>
             <div className="text-xs text-slate-400 mb-3">
               20 מניות מעניינות 2026 לעומת מדדי ייחוס
@@ -168,7 +167,7 @@ export default function SA20Chart() {
           <span className={`text-sm font-bold`} style={{ color: featuredLatest.pct >= 0 ? '#34d399' : '#f87171' }}>
             {featuredLatest.pct >= 0 ? '+' : ''}{featuredLatest.pct.toFixed(2)}%
           </span>
-          <span className="text-3xl font-bold tabular-nums" style={{ color: featuredColor }}>
+          <span className="text-4xl md:text-5xl font-bold tracking-tight tabular-nums" style={{ color: featuredColor }}>
             {featuredLatest.value.toLocaleString('en', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           </span>
         </div>
@@ -197,11 +196,11 @@ export default function SA20Chart() {
               <line
                 x1={PAD.left} x2={CHART_W - PAD.right}
                 y1={yPos(v)} y2={yPos(v)}
-                stroke={v === 0 ? '#334155' : '#1e293b'}
+                stroke={v === 0 ? '#424245' : '#2c2c2e'}
                 strokeWidth={v === 0 ? 1.2 : 0.5}
                 strokeDasharray={v === 0 ? '6,3' : 'none'}
               />
-              <text x={PAD.left - 6} y={yPos(v) + 3.5} textAnchor="end" fontSize="10" fill="#475569">
+              <text x={PAD.left - 6} y={yPos(v) + 3.5} textAnchor="end" fontSize="10" fill="#6e6e73">
                 {v > 0 ? '+' : ''}{v.toFixed(1)}%
               </text>
             </g>
@@ -213,7 +212,7 @@ export default function SA20Chart() {
             const step = Math.ceil(dates.length / 8);
             return i % step === 0 || i === dates.length - 1;
           }).map((d) => (
-            <text key={d} x={xPos(d)} y={CHART_H - 8} textAnchor="middle" fontSize="9.5" fill="#475569">
+            <text key={d} x={xPos(d)} y={CHART_H - 8} textAnchor="middle" fontSize="9.5" fill="#6e6e73">
               {fmtDate(d)}
             </text>
           ))}
@@ -235,7 +234,7 @@ export default function SA20Chart() {
             if (!last || !dates.includes(last.date)) return null;
             return (
               <circle key={s.name + '-dot'} cx={xPos(last.date)} cy={yPos(last.pct)}
-                r={3.5} fill={s.color} stroke="#0c1425" strokeWidth={1.5} />
+                r={3.5} fill={s.color} stroke="#1d1d1f" strokeWidth={1.5} />
             );
           })}
 
@@ -244,13 +243,13 @@ export default function SA20Chart() {
             <>
               <line x1={xPos(tooltipDate)} x2={xPos(tooltipDate)}
                 y1={PAD.top} y2={PAD.top + plotH}
-                stroke="#475569" strokeWidth={1} strokeDasharray="3,3" />
+                stroke="#6e6e73" strokeWidth={1} strokeDasharray="3,3" />
               {visible.map((s) => {
                 const pt = s.points.find((p) => p.date === tooltipDate);
                 if (!pt) return null;
                 return (
                   <circle key={s.name + '-tp'} cx={xPos(tooltipDate)} cy={yPos(pt.pct)}
-                    r={4} fill={s.color} stroke="#0c1425" strokeWidth={2} />
+                    r={4} fill={s.color} stroke="#1d1d1f" strokeWidth={2} />
                 );
               })}
             </>
@@ -260,7 +259,7 @@ export default function SA20Chart() {
 
       {/* ── Tooltip overlay ── */}
       {tooltip && tooltipDate && (
-        <div className="mx-5 mb-2 bg-slate-800/70 backdrop-blur-sm rounded-lg px-3 py-2 text-[11px] flex flex-wrap gap-x-4 gap-y-1">
+        <div className="mx-5 mb-2 bg-black/60 backdrop-blur-xl rounded-xl px-3 py-2 text-[11px] flex flex-wrap gap-x-4 gap-y-1">
           <span className="text-slate-500 font-medium">{fmtDate(tooltipDate)}</span>
           {visible.map((s) => {
             const pt = s.points.find((p) => p.date === tooltipDate);
@@ -279,7 +278,7 @@ export default function SA20Chart() {
       )}
 
       {/* ── Legend (bottom) — click to solo ── */}
-      <div className="px-5 py-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5 border-t border-slate-800">
+      <div className="px-5 py-3 flex flex-wrap justify-center gap-x-3 gap-y-1.5 border-t border-white/[0.06]">
         {[...series].reverse().map((s) => {
           const l = latest(s);
           const isSelected = selected === s.name;
@@ -288,8 +287,8 @@ export default function SA20Chart() {
             <button
               key={s.name}
               onClick={() => handleLegendClick(s.name)}
-              className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md transition-all ${
-                isSelected ? 'bg-slate-800 ring-1 ring-slate-600' : ''
+              className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-full transition-all duration-500 ${
+                isSelected ? 'bg-white/[0.08]' : ''
               } ${isDimmed ? 'opacity-30' : 'opacity-100'} hover:opacity-90`}
             >
               <span className="font-bold tabular-nums" style={{ color: l.pct >= 0 ? '#34d399' : '#f87171' }}>
@@ -303,10 +302,10 @@ export default function SA20Chart() {
       </div>
 
       {/* ── Stock Performance (expandable) ── */}
-      <div className="border-t border-slate-800">
+      <div className="border-t border-white/[0.06]">
         <button
           onClick={() => setStocksOpen(!stocksOpen)}
-          className="w-full px-5 py-2.5 flex items-center justify-between text-xs text-slate-400 hover:bg-slate-800/30 transition-colors"
+          className="w-full px-5 py-2.5 flex items-center justify-between text-xs text-slate-400 hover:bg-white/[0.03] transition-colors duration-500"
         >
           <span className="font-medium">ביצועי 20 מניות בודדות</span>
           <span className={`transition-transform ${stocksOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -329,7 +328,7 @@ export default function SA20Chart() {
       </div>
 
       {/* ── Footer ── */}
-      <div className="px-5 py-2 text-center text-[10px] text-slate-600 border-t border-slate-800/50">
+      <div className="px-5 py-2 text-center text-[10px] text-slate-600 border-t border-white/[0.04]">
         עדכון: {new Date(data.lastUpdated).toLocaleDateString('he-IL')}
         {' · '}
         <span>מדדי חו&quot;ל מוצמדים לשקל</span>
