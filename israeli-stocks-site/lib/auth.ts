@@ -7,15 +7,16 @@ const COOKIE_NAME = 'admin_session';
 const EXPIRY = '2h';
 
 function getSecret() {
-  const secret = process.env.ADMIN_JWT_SECRET;
+  const secret = process.env.ADMIN_JWT_SECRET?.trim();
   if (!secret) throw new Error('ADMIN_JWT_SECRET not set');
   return new TextEncoder().encode(secret);
 }
 
 export async function verifyPassword(password: string): Promise<boolean> {
-  const hash = process.env.ADMIN_PASSWORD_HASH;
+  // trim: a stray space/newline pasted into the Vercel setting must not break login
+  const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
   if (!hash) return false;
-  return compare(password, hash);
+  return compare(password.trim(), hash);
 }
 
 export async function createSession(): Promise<string> {

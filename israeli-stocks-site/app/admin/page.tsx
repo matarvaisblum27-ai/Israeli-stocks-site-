@@ -86,7 +86,7 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
     return () => clearTimeout(t);
   }, [onClose, type]);
   return (
-    <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-xl text-sm font-medium shadow-lg border ${
+    <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl text-sm font-medium shadow-lg border ${
       type === 'success' ? 'bg-green-500/15 border-green-500/30 text-green-400' : 'bg-red-500/15 border-red-500/30 text-red-400'
     }`}>
       {message}
@@ -781,7 +781,7 @@ export default function AdminDashboard() {
                 setMode('interesting');
                 setMobileSidebar(false);
               }}
-              className={`w-full text-right px-3 py-2 rounded-lg mb-1 text-sm transition-colors ${
+              className={`w-full text-right px-3 py-2 rounded-xl mb-1 text-sm transition-colors duration-300 ${
                 mode === 'interesting' && selectedInterestingYear === y
                   ? 'bg-amber-500/20 text-amber-300'
                   : 'text-amber-200/70 hover:bg-slate-800'
@@ -803,7 +803,7 @@ export default function AdminDashboard() {
           setMobileSidebar(false);
           loadVideos();
         }}
-        className={`w-full text-right px-3 py-2 rounded-lg mb-3 text-sm transition-colors ${
+        className={`w-full text-right px-3 py-2 rounded-xl mb-3 text-sm transition-colors duration-300 ${
           mode === 'videos'
             ? 'bg-red-500/20 text-red-400'
             : 'text-red-300/70 hover:bg-slate-800'
@@ -825,7 +825,7 @@ export default function AdminDashboard() {
               setMode('intro');
               setMobileSidebar(false);
             }}
-            className={`w-full text-right px-3 py-2 rounded-lg mb-3 text-sm transition-colors ${
+            className={`w-full text-right px-3 py-2 rounded-xl mb-3 text-sm transition-colors duration-300 ${
               selectedCatIdx === catIdx && mode === 'intro'
                 ? 'bg-green-500/20 text-green-400'
                 : 'text-green-300/70 hover:bg-slate-800'
@@ -863,8 +863,8 @@ export default function AdminDashboard() {
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`mb-1 rounded-lg transition-all ${
-              dragOverIdx === idx && dragIdx !== idx ? 'border-2 border-blue-400/50 border-dashed' : ''
+            className={`mb-1 rounded-xl transition-all ${
+              dragOverIdx === idx && dragIdx !== idx ? 'border-2 border-accent/50 border-dashed' : ''
             } ${dragIdx === idx ? 'opacity-40' : ''}`}
           >
             <button
@@ -875,9 +875,9 @@ export default function AdminDashboard() {
                 setMode('categories');
                 setMobileSidebar(false);
               }}
-              className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-colors cursor-grab active:cursor-grabbing ${
+              className={`w-full text-right px-3 py-2 rounded-xl text-sm transition-colors duration-300 cursor-grab active:cursor-grabbing ${
                 selectedCatIdx === idx && mode !== 'interesting'
-                  ? 'bg-blue-500/20 text-blue-400'
+                  ? 'bg-accent/20 text-accent'
                   : 'text-slate-300 hover:bg-slate-800'
               }`}
             >
@@ -901,8 +901,8 @@ export default function AdminDashboard() {
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             placeholder="🔍 חפש חברה..."
-            className="w-full px-4 py-3 rounded-xl text-sm text-slate-100 pr-10"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+            className="w-full px-4 py-3 rounded-2xl text-sm text-slate-100 pr-10"
+            style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
             dir="rtl"
           />
           {searchQuery && (
@@ -916,8 +916,8 @@ export default function AdminDashboard() {
         </div>
         {searchFocused && searchQuery.length >= 2 && (
           <div
-            className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto"
-            style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+            className="absolute z-50 w-full mt-1 rounded-2xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto"
+            style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
           >
             {searchResults.length === 0 ? (
               <div className="px-4 py-3 text-sm text-slate-500">לא נמצאו תוצאות</div>
@@ -926,7 +926,7 @@ export default function AdminDashboard() {
                 <button
                   key={`${item.catPos}-${item.idx}`}
                   onClick={() => navigateToCompany(item)}
-                  className={`w-full text-right px-4 py-3 text-sm hover:bg-slate-800 transition-colors flex justify-between items-center ${
+                  className={`w-full text-right px-4 py-3 text-sm hover:bg-slate-800 transition-colors duration-300 flex justify-between items-center ${
                     i < searchResults.length - 1 ? 'border-b border-slate-800' : ''
                   }`}
                 >
@@ -944,38 +944,38 @@ export default function AdminDashboard() {
         {/* Mobile sidebar toggle */}
         <button
           onClick={() => setMobileSidebar(!mobileSidebar)}
-          className="md:hidden px-4 py-2 rounded-xl text-sm text-slate-300"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="md:hidden px-4 py-2 rounded-2xl text-sm text-slate-300"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           ☰ קטגוריות
         </button>
-        <div className="hidden md:flex px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+        <div className="hidden md:flex px-4 py-2 rounded-2xl text-sm" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
           <span className="text-slate-400">קטגוריות: </span>
           <span className="text-slate-100 font-semibold">{categories.filter(c => !c.name.includes('הקדמה')).length}</span>
         </div>
-        <div className="hidden md:flex px-4 py-2 rounded-xl text-sm" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+        <div className="hidden md:flex px-4 py-2 rounded-2xl text-sm" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
           <span className="text-slate-400">חברות בקטגוריה: </span>
           <span className="text-slate-100 font-semibold">{companies.length}</span>
         </div>
         <button
           onClick={rebuildSearchIndex}
           disabled={saving}
-          className="hidden md:block px-4 py-2 rounded-xl text-sm text-blue-400 hover:text-blue-300 transition-colors"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="hidden md:block px-4 py-2 rounded-2xl text-sm text-accent hover:text-accent/80 transition-colors duration-300"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           בנה אינדקס חיפוש מחדש
         </button>
         <button
           onClick={() => { setMode('merge'); loadAllCompanies(); setMobileSidebar(false); }}
-          className="px-4 py-2 rounded-xl text-sm text-purple-400 hover:text-purple-300 transition-colors"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="px-4 py-2 rounded-2xl text-sm text-purple-400 hover:text-purple-300 transition-colors duration-300"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           איחוד חברות
         </button>
         <button
           onClick={() => { setMode('addCategory'); setMobileSidebar(false); }}
-          className="px-4 py-2 rounded-xl text-sm text-green-400 hover:text-green-300 transition-colors"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="px-4 py-2 rounded-2xl text-sm text-green-400 hover:text-green-300 transition-colors duration-300"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           + קטגוריה חדשה
         </button>
@@ -983,7 +983,7 @@ export default function AdminDashboard() {
 
       {saving && (
         <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-          <div className="px-6 py-4 rounded-xl text-sm text-slate-200" style={{ background: '#0f172a' }}>
+          <div className="px-6 py-4 rounded-2xl text-sm text-slate-200" style={{ background: '#1d1d1f' }}>
             שומר...
           </div>
         </div>
@@ -996,7 +996,7 @@ export default function AdminDashboard() {
             <div className="absolute inset-0 bg-black/50" />
             <div
               className="absolute right-0 top-0 bottom-0 w-72 p-3 overflow-y-auto"
-              style={{ background: '#0f172a' }}
+              style={{ background: '#1d1d1f' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-3 px-2">
@@ -1010,7 +1010,7 @@ export default function AdminDashboard() {
 
         {/* ─── Desktop sidebar ─── */}
         <div className="hidden md:block w-64 shrink-0">
-          <div className="sticky top-16 rounded-xl p-3 max-h-[calc(100vh-120px)] overflow-y-auto" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+          <div className="sticky top-16 rounded-2xl p-3 max-h-[calc(100vh-120px)] overflow-y-auto" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
             {sidebarContent}
           </div>
         </div>
@@ -1058,7 +1058,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Add video form */}
-              <div className="p-4 rounded-xl mb-6" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+              <div className="p-4 rounded-2xl mb-6" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="text-sm text-slate-300 mb-3 font-medium">הוסף סרטון חדש</div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
@@ -1066,7 +1066,7 @@ export default function AdminDashboard() {
                     value={newVideoUrl}
                     onChange={(e) => setNewVideoUrl(e.target.value)}
                     placeholder="הדבק קישור YouTube כאן..."
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-accent"
                     dir="ltr"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && newVideoUrl.trim()) addVideo(newVideoUrl, newVideoPriority);
@@ -1084,7 +1084,7 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => newVideoUrl.trim() && addVideo(newVideoUrl, newVideoPriority)}
                     disabled={saving || !newVideoUrl.trim()}
-                    className="px-5 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                    className="px-5 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition-colors duration-300 whitespace-nowrap"
                   >
                     + הוסף
                   </button>
@@ -1102,14 +1102,14 @@ export default function AdminDashboard() {
                   {adminVideos.map((v) => (
                     <div
                       key={v.id}
-                      className="flex items-center gap-3 p-3 rounded-xl transition-colors"
-                      style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+                      className="flex items-center gap-3 p-3 rounded-2xl transition-colors duration-300"
+                      style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
                     >
                       {/* Thumbnail */}
                       <img
                         src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
                         alt=""
-                        className="w-28 h-16 object-cover rounded-lg flex-shrink-0"
+                        className="w-28 h-16 object-cover rounded-xl flex-shrink-0"
                       />
                       {/* Info */}
                       <div className="flex-1 min-w-0">
@@ -1130,7 +1130,7 @@ export default function AdminDashboard() {
                         <button
                           onClick={() => toggleVideoPriority(v.id, !v.priority)}
                           disabled={saving}
-                          className={`text-xs px-2 py-1 rounded-lg transition-colors ${
+                          className={`text-xs px-2 py-1 rounded-xl transition-colors duration-300 ${
                             v.priority
                               ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
                               : 'bg-slate-800 text-slate-500 hover:text-amber-400'
@@ -1143,14 +1143,14 @@ export default function AdminDashboard() {
                           href={`https://www.youtube.com/watch?v=${v.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs px-2 py-1 rounded-lg bg-slate-800 text-blue-400 hover:text-blue-300 transition-colors"
+                          className="text-xs px-2 py-1 rounded-xl bg-slate-800 text-accent hover:text-accent/80 transition-colors duration-300"
                         >
                           ▶
                         </a>
                         <button
                           onClick={() => { if (confirm('למחוק את הסרטון?')) deleteVideo(v.id); }}
                           disabled={saving}
-                          className="text-xs px-2 py-1 rounded-lg bg-slate-800 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
+                          className="text-xs px-2 py-1 rounded-xl bg-slate-800 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors duration-300"
                         >
                           ✕
                         </button>
@@ -1180,12 +1180,12 @@ export default function AdminDashboard() {
                   <button
                     key={idx}
                     onClick={() => { setSelectedCompanyIdx(idx); setMode('company'); }}
-                    className={`w-full text-right px-4 py-3 rounded-xl text-sm transition-colors flex justify-between items-center ${
+                    className={`w-full text-right px-4 py-3 rounded-2xl text-sm transition-colors duration-300 flex justify-between items-center ${
                       selectedCompanyIdx === idx
-                        ? 'bg-blue-500/15 border-blue-500/30'
+                        ? 'bg-accent/15 border-accent/30'
                         : 'hover:bg-slate-800/50'
                     }`}
-                    style={{ background: selectedCompanyIdx === idx ? undefined : '#0f172a', border: '1px solid #1e293b' }}
+                    style={{ background: selectedCompanyIdx === idx ? undefined : '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
                   >
                     <span className="text-slate-200">{company.name}</span>
                     <span className="text-xs text-slate-500">
@@ -1263,26 +1263,26 @@ function CategoryHeader({
   const [name, setName] = useState(category.name);
 
   return (
-    <div className="mb-6 p-4 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+    <div className="mb-6 p-4 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="flex items-center gap-3 mb-2">
         {editing ? (
           <div className="flex items-center gap-2 flex-1">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="flex-1 px-3 py-1.5 rounded-lg text-sm text-slate-100"
-              style={{ background: '#1e293b', border: '1px solid #334155' }}
+              className="flex-1 px-3 py-1.5 rounded-xl text-sm text-slate-100"
+              style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
               autoFocus
             />
             <button
               onClick={() => { onRename(name); setEditing(false); }}
-              className="px-3 py-1.5 rounded-lg text-xs text-white bg-blue-500"
+              className="px-3 py-1.5 rounded-xl text-xs text-white bg-accent"
             >
               שמור
             </button>
             <button
               onClick={() => { setName(category.name); setEditing(false); }}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-400"
+              className="px-3 py-1.5 rounded-xl text-xs text-slate-400"
             >
               ביטול
             </button>
@@ -1290,7 +1290,7 @@ function CategoryHeader({
         ) : (
           <>
             <h2 className="text-xl font-bold text-slate-100">{category.name}</h2>
-            <button onClick={() => setEditing(true)} className="text-xs text-blue-400 hover:text-blue-300">
+            <button onClick={() => setEditing(true)} className="text-xs text-accent hover:text-accent/80">
               שנה שם
             </button>
           </>
@@ -1298,7 +1298,7 @@ function CategoryHeader({
       </div>
       <div className="flex gap-2 text-xs">
         <span className="text-slate-500">position: {category.position} | index: {catIndex}</span>
-        <button onClick={onEditIntro} className="text-blue-400 hover:underline">ערוך הקדמה</button>
+        <button onClick={onEditIntro} className="text-accent hover:underline">ערוך הקדמה</button>
         <button onClick={onAddCompany} className="text-green-400 hover:underline">+ חברה חדשה</button>
       </div>
     </div>
@@ -1331,48 +1331,58 @@ function CompanyEditor({
 }) {
   const years = Object.keys(company.reviews || {}).sort();
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] || '2026');
-  const [html, setHtml] = useState('');
+  // Seed with the current review so the editor never opens empty
+  const [html, setHtml] = useState(() => flattenHtml((company.reviews || {})[years[years.length - 1] || '2026']));
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(company.name);
   const [newYear, setNewYear] = useState('');
   const [showMove, setShowMove] = useState(false);
   const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
 
+  const prevYearRef = useRef(selectedYear);
+  const prevCompanyRef = useRef(company.name);
+
   useEffect(() => {
-    const reviews = company.reviews || {};
-    setHtml(flattenHtml(reviews[selectedYear]));
+    // Only reset html when the year or company actually changes — not on every render
+    // (company object reference changes on every parent render and was wiping edits)
+    if (prevYearRef.current !== selectedYear || prevCompanyRef.current !== company.name) {
+      prevYearRef.current = selectedYear;
+      prevCompanyRef.current = company.name;
+      const reviews = company.reviews || {};
+      setHtml(flattenHtml(reviews[selectedYear]));
+    }
   }, [selectedYear, company]);
 
   return (
     <div>
       {/* Back + title */}
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={onBack} className="text-sm text-blue-400 hover:text-blue-300">
+        <button onClick={onBack} className="text-sm text-accent hover:text-accent/80">
           → חזרה לרשימה
         </button>
       </div>
 
       {/* Company name */}
-      <div className="mb-4 p-4 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+      <div className="mb-4 p-4 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="flex items-center gap-3">
           {editingName ? (
             <div className="flex items-center gap-2 flex-1">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg text-sm text-slate-100"
-                style={{ background: '#1e293b', border: '1px solid #334155' }}
+                className="flex-1 px-3 py-1.5 rounded-xl text-sm text-slate-100"
+                style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
                 autoFocus
               />
               <button
                 onClick={() => { onSaveName(companyIndex, name); setEditingName(false); }}
-                className="px-3 py-1.5 rounded-lg text-xs text-white bg-blue-500"
+                className="px-3 py-1.5 rounded-xl text-xs text-white bg-accent"
               >
                 שמור
               </button>
               <button
                 onClick={() => { setName(company.name); setEditingName(false); }}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400"
+                className="px-3 py-1.5 rounded-xl text-xs text-slate-400"
               >
                 ביטול
               </button>
@@ -1380,7 +1390,7 @@ function CompanyEditor({
           ) : (
             <>
               <h2 className="text-xl font-bold text-slate-100">{company.name}</h2>
-              <button onClick={() => setEditingName(true)} className="text-xs text-blue-400">שנה שם</button>
+              <button onClick={() => setEditingName(true)} className="text-xs text-accent">שנה שם</button>
             </>
           )}
         </div>
@@ -1401,7 +1411,7 @@ function CompanyEditor({
         </div>
 
         {showMove && (
-          <div className="mt-3 p-3 rounded-lg" style={{ background: '#1e293b' }}>
+          <div className="mt-3 p-3 rounded-xl" style={{ background: '#2c2c2e' }}>
             <div className="text-xs text-slate-400 mb-2">בחר קטגוריה יעד:</div>
             <div className="flex flex-wrap gap-1">
               {categories
@@ -1426,12 +1436,12 @@ function CompanyEditor({
           <div key={y} className="flex items-center gap-0.5">
             <button
               onClick={() => setSelectedYear(y)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+              className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
                 selectedYear === y
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-accent text-white'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              style={selectedYear !== y ? { background: '#1e293b' } : {}}
+              style={selectedYear !== y ? { background: '#2c2c2e' } : {}}
             >
               {y}
             </button>
@@ -1458,7 +1468,7 @@ function CompanyEditor({
             onChange={(e) => setNewYear(e.target.value)}
             placeholder="שנה חדשה"
             className="w-24 px-2 py-1 rounded text-xs text-slate-100"
-            style={{ background: '#1e293b', border: '1px solid #334155' }}
+            style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
           />
           <button
             onClick={() => {
@@ -1476,7 +1486,7 @@ function CompanyEditor({
       </div>
 
       {/* Status selector */}
-      <div className="mb-4 p-3 rounded-xl flex items-center gap-3 flex-wrap" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+      <div className="mb-4 p-3 rounded-2xl flex items-center gap-3 flex-wrap" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
         <span className="text-xs text-slate-400">סטטוס:</span>
         {STATUS_OPTIONS.map((opt) => {
           const current = detectStatus(html);
@@ -1485,7 +1495,7 @@ function CompanyEditor({
             <button
               key={opt.label}
               onClick={() => setHtml(setStatusInHtml(html, opt.value))}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 isActive
                   ? `${opt.color} ring-2 ring-current/30 bg-slate-800`
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
@@ -1502,13 +1512,13 @@ function CompanyEditor({
         <div className="flex gap-2">
           <button
             onClick={() => setEditorMode('rich')}
-            className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}
+            className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-accent/20 text-accent' : 'text-slate-500'}`}
           >
             עורך ויזואלי
           </button>
           <button
             onClick={() => setEditorMode('html')}
-            className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}
+            className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-accent/20 text-accent' : 'text-slate-500'}`}
           >
             HTML
           </button>
@@ -1522,8 +1532,8 @@ function CompanyEditor({
         <textarea
           value={html}
           onChange={(e) => setHtml(e.target.value)}
-          className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono leading-relaxed resize-none text-slate-200"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="w-full h-[60vh] px-4 py-3 rounded-2xl text-sm font-mono leading-relaxed resize-none text-slate-200"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
           dir="rtl"
         />
       )}
@@ -1531,7 +1541,7 @@ function CompanyEditor({
       <div className="mt-4 flex gap-2">
         <button
           onClick={() => onSaveReview(companyIndex, selectedYear, html)}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+          className="px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-accent hover:bg-accent/80 transition-colors duration-300"
         >
           שמור סקירה
         </button>
@@ -1540,8 +1550,8 @@ function CompanyEditor({
             const reviews = company.reviews || {};
             setHtml(flattenHtml(reviews[selectedYear]));
           }}
-          className="px-4 py-2.5 rounded-xl text-sm text-slate-400 hover:text-slate-200"
-          style={{ background: '#1e293b' }}
+          className="px-4 py-2.5 rounded-2xl text-sm text-slate-400 hover:text-slate-200"
+          style={{ background: '#2c2c2e' }}
         >
           בטל שינויים
         </button>
@@ -1565,17 +1575,22 @@ function IntroEditor({
   const intro = category.intro || {};
   const years = Object.keys(intro).sort();
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] || '2026');
-  const [html, setHtml] = useState('');
+  // Seed with the current intro so the editor never opens empty
+  const [html, setHtml] = useState(() => flattenHtml(intro[years[years.length - 1] || '2026']));
   const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
+  const prevIntroYearRef = useRef(selectedYear);
 
   useEffect(() => {
-    setHtml(flattenHtml(intro[selectedYear]));
+    if (prevIntroYearRef.current !== selectedYear) {
+      prevIntroYearRef.current = selectedYear;
+      setHtml(flattenHtml(intro[selectedYear]));
+    }
   }, [selectedYear, intro]);
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={onBack} className="text-sm text-blue-400 hover:text-blue-300">
+        <button onClick={onBack} className="text-sm text-accent hover:text-accent/80">
           → חזרה
         </button>
         <h2 className="text-lg font-bold text-slate-100">הקדמה: {category.name}</h2>
@@ -1586,10 +1601,10 @@ function IntroEditor({
           <button
             key={y}
             onClick={() => setSelectedYear(y)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              selectedYear === y ? 'bg-blue-500 text-white' : 'text-slate-400'
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
+              selectedYear === y ? 'bg-accent text-white' : 'text-slate-400'
             }`}
-            style={selectedYear !== y ? { background: '#1e293b' } : {}}
+            style={selectedYear !== y ? { background: '#2c2c2e' } : {}}
           >
             {y}
           </button>
@@ -1597,8 +1612,8 @@ function IntroEditor({
       </div>
 
       <div className="flex gap-2 mb-2">
-        <button onClick={() => setEditorMode('rich')} className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}>עורך ויזואלי</button>
-        <button onClick={() => setEditorMode('html')} className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500'}`}>HTML</button>
+        <button onClick={() => setEditorMode('rich')} className={`text-xs px-2 py-1 rounded ${editorMode === 'rich' ? 'bg-accent/20 text-accent' : 'text-slate-500'}`}>עורך ויזואלי</button>
+        <button onClick={() => setEditorMode('html')} className={`text-xs px-2 py-1 rounded ${editorMode === 'html' ? 'bg-accent/20 text-accent' : 'text-slate-500'}`}>HTML</button>
       </div>
 
       {editorMode === 'rich' ? (
@@ -1607,15 +1622,15 @@ function IntroEditor({
         <textarea
           value={html}
           onChange={(e) => setHtml(e.target.value)}
-          className="w-full h-[60vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
-          style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+          className="w-full h-[60vh] px-4 py-3 rounded-2xl text-sm font-mono resize-none text-slate-200"
+          style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
           dir="rtl"
         />
       )}
 
       <button
         onClick={() => onSave(catIndex, selectedYear, html)}
-        className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-500"
+        className="mt-4 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-accent"
       >
         שמור הקדמה
       </button>
@@ -1627,25 +1642,25 @@ function IntroEditor({
 function AddCompanyForm({ onSave, onCancel }: { onSave: (name: string) => void; onCancel: () => void }) {
   const [name, setName] = useState('');
   return (
-    <div className="p-6 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+    <div className="p-6 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
       <h2 className="text-lg font-bold text-slate-100 mb-4">הוספת חברה חדשה</h2>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="שם החברה"
-        className="w-full px-4 py-3 rounded-lg text-sm text-slate-100 mb-4"
-        style={{ background: '#1e293b', border: '1px solid #334155' }}
+        className="w-full px-4 py-3 rounded-xl text-sm text-slate-100 mb-4"
+        style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
         autoFocus
       />
       <div className="flex gap-2">
         <button
           onClick={() => name && onSave(name)}
           disabled={!name}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-500 disabled:opacity-50"
+          className="px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-accent disabled:opacity-50"
         >
           הוסף
         </button>
-        <button onClick={onCancel} className="px-4 py-2.5 rounded-xl text-sm text-slate-400" style={{ background: '#1e293b' }}>
+        <button onClick={onCancel} className="px-4 py-2.5 rounded-2xl text-sm text-slate-400" style={{ background: '#2c2c2e' }}>
           ביטול
         </button>
       </div>
@@ -1657,25 +1672,25 @@ function AddCompanyForm({ onSave, onCancel }: { onSave: (name: string) => void; 
 function AddCategoryForm({ onSave, onCancel }: { onSave: (name: string) => void; onCancel: () => void }) {
   const [name, setName] = useState('');
   return (
-    <div className="p-6 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+    <div className="p-6 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
       <h2 className="text-lg font-bold text-slate-100 mb-4">הוספת קטגוריה חדשה</h2>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="שם הקטגוריה"
-        className="w-full px-4 py-3 rounded-lg text-sm text-slate-100 mb-4"
-        style={{ background: '#1e293b', border: '1px solid #334155' }}
+        className="w-full px-4 py-3 rounded-xl text-sm text-slate-100 mb-4"
+        style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
         autoFocus
       />
       <div className="flex gap-2">
         <button
           onClick={() => name && onSave(name)}
           disabled={!name}
-          className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-500 disabled:opacity-50"
+          className="px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-green-500 disabled:opacity-50"
         >
           הוסף
         </button>
-        <button onClick={onCancel} className="px-4 py-2.5 rounded-xl text-sm text-slate-400" style={{ background: '#1e293b' }}>
+        <button onClick={onCancel} className="px-4 py-2.5 rounded-2xl text-sm text-slate-400" style={{ background: '#2c2c2e' }}>
           ביטול
         </button>
       </div>
@@ -1725,7 +1740,7 @@ function InterestingEditor({
   return (
     <div>
       <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <button onClick={onBack} className="text-sm text-blue-400 hover:text-blue-300">← חזרה</button>
+        <button onClick={onBack} className="text-sm text-accent hover:text-accent/80">← חזרה</button>
         <h2 className="text-lg font-bold text-amber-300">⭐ מעניינות {year}</h2>
         <span className="text-xs text-slate-500">{data.companies.length} חברות</span>
       </div>
@@ -1736,10 +1751,10 @@ function InterestingEditor({
           <button
             key={y}
             onClick={() => { /* parent handles year switch via sidebar */ }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium ${
               year === y ? 'bg-amber-500 text-white' : 'text-slate-400'
             }`}
-            style={year !== y ? { background: '#1e293b' } : {}}
+            style={year !== y ? { background: '#2c2c2e' } : {}}
           >
             {y}
           </button>
@@ -1750,7 +1765,7 @@ function InterestingEditor({
             onChange={(e) => setNewYearInput(e.target.value)}
             placeholder="שנה חדשה"
             className="w-24 px-2 py-1 rounded text-xs text-slate-100"
-            style={{ background: '#1e293b', border: '1px solid #334155' }}
+            style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
           />
           <button
             onClick={() => { if (newYearInput && !years.includes(newYearInput)) { onCreateYear(newYearInput); setNewYearInput(''); } }}
@@ -1765,15 +1780,15 @@ function InterestingEditor({
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => { setTab('companies'); setSelectedIdx(null); }}
-          className={`px-4 py-2 rounded-lg text-sm ${tab === 'companies' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
-          style={tab !== 'companies' ? { background: '#1e293b' } : {}}
+          className={`px-4 py-2 rounded-xl text-sm ${tab === 'companies' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
+          style={tab !== 'companies' ? { background: '#2c2c2e' } : {}}
         >
           חברות ({data.companies.length})
         </button>
         <button
           onClick={() => setTab('preamble')}
-          className={`px-4 py-2 rounded-lg text-sm ${tab === 'preamble' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
-          style={tab !== 'preamble' ? { background: '#1e293b' } : {}}
+          className={`px-4 py-2 rounded-xl text-sm ${tab === 'preamble' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'}`}
+          style={tab !== 'preamble' ? { background: '#2c2c2e' } : {}}
         >
           הקדמה
         </button>
@@ -1792,14 +1807,14 @@ function InterestingEditor({
             <textarea
               value={preambleHtml}
               onChange={(e) => setPreambleHtml(e.target.value)}
-              className="w-full h-[50vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
-              style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+              className="w-full h-[50vh] px-4 py-3 rounded-2xl text-sm font-mono resize-none text-slate-200"
+              style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
               dir="rtl"
             />
           )}
           <button
             onClick={() => onSavePreamble(year, preambleHtml)}
-            className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
+            className="mt-4 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
           >
             שמור הקדמה
           </button>
@@ -1815,13 +1830,13 @@ function InterestingEditor({
               value={newCompanyName}
               onChange={(e) => setNewCompanyName(e.target.value)}
               placeholder="שם חברה חדשה..."
-              className="flex-1 px-3 py-2 rounded-lg text-sm text-slate-100"
-              style={{ background: '#1e293b', border: '1px solid #334155' }}
+              className="flex-1 px-3 py-2 rounded-xl text-sm text-slate-100"
+              style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
             />
             <button
               onClick={() => { if (newCompanyName) { onAddCompany(year, newCompanyName); setNewCompanyName(''); } }}
               disabled={!newCompanyName}
-              className="px-4 py-2 rounded-lg text-sm text-white bg-green-500 hover:bg-green-600 disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-sm text-white bg-green-500 hover:bg-green-600 disabled:opacity-50"
             >
               + הוסף
             </button>
@@ -1832,8 +1847,8 @@ function InterestingEditor({
             {data.companies.map((c, idx) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm"
-                style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+                className="flex items-center justify-between px-4 py-3 rounded-2xl text-sm"
+                style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
               >
                 <button
                   onClick={() => setSelectedIdx(idx)}
@@ -1860,17 +1875,17 @@ function InterestingEditor({
       {/* ── Single company edit ── */}
       {tab === 'companies' && selectedIdx !== null && data.companies[selectedIdx] && (
         <div>
-          <button onClick={() => setSelectedIdx(null)} className="text-sm text-blue-400 hover:text-blue-300 mb-4">
+          <button onClick={() => setSelectedIdx(null)} className="text-sm text-accent hover:text-accent/80 mb-4">
             ← חזרה לרשימה
           </button>
-          <div className="mb-4 p-4 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+          <div className="mb-4 p-4 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs text-slate-500">שם:</span>
               <input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg text-sm text-slate-100"
-                style={{ background: '#1e293b', border: '1px solid #334155' }}
+                className="flex-1 px-3 py-1.5 rounded-xl text-sm text-slate-100"
+                style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
               />
             </div>
           </div>
@@ -1885,14 +1900,14 @@ function InterestingEditor({
             <textarea
               value={editHtml}
               onChange={(e) => setEditHtml(e.target.value)}
-              className="w-full h-[50vh] px-4 py-3 rounded-xl text-sm font-mono resize-none text-slate-200"
-              style={{ background: '#0f172a', border: '1px solid #1e293b' }}
+              className="w-full h-[50vh] px-4 py-3 rounded-2xl text-sm font-mono resize-none text-slate-200"
+              style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}
               dir="rtl"
             />
           )}
           <button
             onClick={() => onSaveCompany(year, selectedIdx, { name: editName, html: editHtml })}
-            className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
+            className="mt-4 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600"
           >
             שמור
           </button>
@@ -1927,7 +1942,7 @@ function MergePanel({
     : [];
 
   return (
-    <div className="p-6 rounded-xl" style={{ background: '#0f172a', border: '1px solid #1e293b' }}>
+    <div className="p-6 rounded-2xl" style={{ background: '#1d1d1f', border: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-bold text-slate-100">איחוד חברות</h2>
         <button onClick={onCancel} className="text-sm text-slate-400 hover:text-slate-200">ביטול</button>
@@ -1944,11 +1959,11 @@ function MergePanel({
               value={sourceSearch}
               onChange={(e) => { setSourceSearch(e.target.value); setSource(null); }}
               placeholder="חפש חברה..."
-              className="w-full px-3 py-2 rounded-lg text-sm text-slate-100 mb-2"
-              style={{ background: '#1e293b', border: '1px solid #334155' }}
+              className="w-full px-3 py-2 rounded-xl text-sm text-slate-100 mb-2"
+              style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
             />
             {source ? (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-sm">
                 <div className="text-red-400 font-medium">{source.name}</div>
                 <div className="text-xs text-slate-500">{source.catName}</div>
               </div>
@@ -1974,11 +1989,11 @@ function MergePanel({
               value={targetSearch}
               onChange={(e) => { setTargetSearch(e.target.value); setTarget(null); }}
               placeholder="חפש חברה..."
-              className="w-full px-3 py-2 rounded-lg text-sm text-slate-100 mb-2"
-              style={{ background: '#1e293b', border: '1px solid #334155' }}
+              className="w-full px-3 py-2 rounded-xl text-sm text-slate-100 mb-2"
+              style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}
             />
             {target ? (
-              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-sm">
+              <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-sm">
                 <div className="text-green-400 font-medium">{target.name}</div>
                 <div className="text-xs text-slate-500">{target.catName}</div>
               </div>
@@ -2002,7 +2017,7 @@ function MergePanel({
       {source && target && (
         <button
           onClick={() => onMerge(source.catPos, source.idx, target.catPos, target.idx)}
-          className="mt-6 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600"
+          className="mt-6 px-6 py-2.5 rounded-2xl text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600"
         >
           אחד את &quot;{source.name}&quot; לתוך &quot;{target.name}&quot;
         </button>

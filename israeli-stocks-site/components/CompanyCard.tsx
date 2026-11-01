@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Company } from '@/lib/supabase';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { StatusPill, Disclosure } from './ui';
 
 type Classification = 'מעניינת' | 'למעקב' | 'לא עוברת' | null;
 
@@ -17,12 +18,6 @@ function getClassification(html: string): Classification {
   if (tail.includes('מעניינת')) return 'מעניינת';
   return null;
 }
-
-const BADGE_STYLES: Record<NonNullable<Classification>, { bg: string; text: string; icon: string }> = {
-  'מעניינת':   { bg: 'bg-emerald-600/25 border border-emerald-500/40', text: 'text-emerald-300', icon: '⭐' },
-  'למעקב':    { bg: 'bg-amber-600/25 border border-amber-500/40',    text: 'text-amber-300',   icon: '👁' },
-  'לא עוברת': { bg: 'bg-red-600/25 border border-red-500/40',        text: 'text-red-400',     icon: '✗' },
-};
 
 export default function CompanyCard({
   company,
@@ -42,31 +37,23 @@ export default function CompanyCard({
     .slice(0, 220);
 
   const classification = getClassification(reviews['2026'] || '');
-  const badgeStyle = classification ? BADGE_STYLES[classification] : null;
 
   return (
-    <div className="bg-panel border border-border rounded-xl overflow-hidden">
+    <div className="card-depth rounded-2xl overflow-hidden transition-colors duration-500 ease-apple hover:bg-[#232325]">
       <div
-        className="p-4 cursor-pointer flex justify-between items-start gap-3"
+        className="p-5 cursor-pointer flex justify-between items-start gap-4"
         onClick={() => setOpen(!open)}
       >
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-slate-100 mb-1 flex gap-2 items-center flex-wrap">
+          <div className="font-semibold text-[17px] text-ink mb-1.5 flex gap-2.5 items-center flex-wrap">
             <span>{company.name}</span>
-            {badgeStyle && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 ${badgeStyle.bg} ${badgeStyle.text}`}>
-                <span>{badgeStyle.icon}</span>
-                <span>{classification}</span>
-              </span>
-            )}
+            {classification && <StatusPill status={classification} />}
             <div className="flex gap-1">
               {years.map((y) => (
                 <span
                   key={y}
-                  className={`text-[10px] px-1.5 py-0.5 rounded ${
-                    reviews[y]
-                      ? 'bg-emerald-700/40 text-emerald-300'
-                      : 'bg-slate-800 text-slate-600'
+                  className={`text-[10px] tabular-nums px-1.5 py-0.5 rounded-md ${
+                    reviews[y] ? 'bg-white/[0.08] text-slate-300' : 'text-slate-700'
                   }`}
                 >
                   {y}
@@ -75,24 +62,22 @@ export default function CompanyCard({
             </div>
           </div>
           {!open && preview && (
-            <div className="text-xs text-muted truncate">{preview}...</div>
+            <div className="text-sm text-muted truncate">{preview}…</div>
           )}
         </div>
-        <div className="text-muted text-lg">{open ? '▴' : '▾'}</div>
+        <Disclosure open={open} />
       </div>
 
       {open && (
-        <div className="border-t border-border">
+        <div>
           {availableYears.length > 1 && (
-            <div className="flex gap-2 px-5 pt-4">
+            <div className="mx-5 inline-flex gap-1 rounded-full bg-black/40 p-1">
               {availableYears.map((y) => (
                 <button
                   key={y}
                   onClick={() => setYear(y)}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold border ${
-                    y === year
-                      ? 'bg-accent border-accent text-white'
-                      : 'bg-bg border-border text-muted'
+                  className={`px-3.5 py-1.5 rounded-full text-xs tabular-nums transition-all duration-500 ease-apple ${
+                    y === year ? 'bg-ink text-black font-semibold' : 'text-slate-300 hover:text-ink'
                   }`}
                 >
                   {y}
@@ -101,7 +86,7 @@ export default function CompanyCard({
             </div>
           )}
           <div
-            className="review-body px-5 pb-5 pt-4 text-sm"
+            className="review-body px-6 pb-6 pt-3 text-[15px]"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(reviews[year] || '') }}
           />
         </div>

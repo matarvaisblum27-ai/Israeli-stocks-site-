@@ -36,25 +36,17 @@ export default function AdminLogin() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: '#0b1220' }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm p-8 rounded-2xl border"
-        style={{ background: '#0f172a', borderColor: '#1e293b' }}
-      >
-        <h1 className="text-2xl font-bold text-slate-100 text-center mb-2">
-          ניהול האתר
-        </h1>
-        <p className="text-slate-400 text-sm text-center mb-6">
-          הכנס סיסמה כדי להמשיך
-        </p>
+    <div dir="rtl" className="relative min-h-screen flex items-center justify-center bg-black px-6 overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full bg-[#2997ff]/20 blur-[120px]" />
+      </div>
+      <form onSubmit={handleSubmit} className="glass relative w-full max-w-sm rounded-[28px] p-8 md:p-10">
+        <p className="text-titanium text-sm font-semibold text-center mb-2">סקירת מניות ישראל</p>
+        <h1 className="text-4xl font-bold tracking-tight text-ink text-center mb-2">ניהול האתר.</h1>
+        <p className="text-muted text-sm text-center mb-8">הכנס סיסמה כדי להמשיך</p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+          <div className="mb-4 px-4 py-3 rounded-2xl bg-red-500/10 text-red-400 text-sm text-center">
             {error}
           </div>
         )}
@@ -64,8 +56,12 @@ export default function AdminLogin() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="סיסמה"
-          className="w-full px-4 py-3 rounded-lg text-sm text-slate-100 placeholder-slate-500 mb-4 outline-none focus:ring-2 focus:ring-blue-500"
-          style={{ background: '#1e293b', border: '1px solid #334155' }}
+          autoComplete="current-password"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          dir="ltr"
+          className="w-full px-4 py-3.5 rounded-2xl text-base text-ink text-center placeholder:text-muted mb-4 outline-none bg-white/[0.06] focus:bg-white/[0.1] focus:ring-2 focus:ring-accent/60 transition-all duration-500"
           autoFocus
           disabled={loading}
         />
@@ -73,10 +69,9 @@ export default function AdminLogin() {
         <button
           type="submit"
           disabled={loading || !password}
-          className="w-full py-3 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ background: '#3b82f6' }}
+          className="w-full py-3.5 rounded-full text-base font-semibold text-white bg-accent hover:bg-accent/85 transition-all duration-500 disabled:opacity-40"
         >
-          {loading ? 'מתחבר...' : 'כניסה'}
+          {loading ? 'מתחבר…' : 'כניסה'}
         </button>
       </form>
     </div>

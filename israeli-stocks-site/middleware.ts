@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    const secret = process.env.ADMIN_JWT_SECRET;
+    const secret = process.env.ADMIN_JWT_SECRET?.trim();
     if (!secret) throw new Error('No secret');
     await jwtVerify(token, new TextEncoder().encode(secret));
     return NextResponse.next();
