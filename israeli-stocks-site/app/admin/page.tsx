@@ -1331,16 +1331,26 @@ function CompanyEditor({
 }) {
   const years = Object.keys(company.reviews || {}).sort();
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] || '2026');
-  const [html, setHtml] = useState('');
+  // Seed with the current review so the editor never opens empty
+  const [html, setHtml] = useState(() => flattenHtml((company.reviews || {})[years[years.length - 1] || '2026']));
   const [editingName, setEditingName] = useState(false);
   const [name, setName] = useState(company.name);
   const [newYear, setNewYear] = useState('');
   const [showMove, setShowMove] = useState(false);
   const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
 
+  const prevYearRef = useRef(selectedYear);
+  const prevCompanyRef = useRef(company.name);
+
   useEffect(() => {
-    const reviews = company.reviews || {};
-    setHtml(flattenHtml(reviews[selectedYear]));
+    // Only reset html when the year or company actually changes — not on every render
+    // (company object reference changes on every parent render and was wiping edits)
+    if (prevYearRef.current !== selectedYear || prevCompanyRef.current !== company.name) {
+      prevYearRef.current = selectedYear;
+      prevCompanyRef.current = company.name;
+      const reviews = company.reviews || {};
+      setHtml(flattenHtml(reviews[selectedYear]));
+    }
   }, [selectedYear, company]);
 
   return (
@@ -1565,11 +1575,16 @@ function IntroEditor({
   const intro = category.intro || {};
   const years = Object.keys(intro).sort();
   const [selectedYear, setSelectedYear] = useState(years[years.length - 1] || '2026');
-  const [html, setHtml] = useState('');
+  // Seed with the current intro so the editor never opens empty
+  const [html, setHtml] = useState(() => flattenHtml(intro[years[years.length - 1] || '2026']));
   const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
+  const prevIntroYearRef = useRef(selectedYear);
 
   useEffect(() => {
-    setHtml(flattenHtml(intro[selectedYear]));
+    if (prevIntroYearRef.current !== selectedYear) {
+      prevIntroYearRef.current = selectedYear;
+      setHtml(flattenHtml(intro[selectedYear]));
+    }
   }, [selectedYear, intro]);
 
   return (

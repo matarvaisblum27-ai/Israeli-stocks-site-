@@ -272,7 +272,13 @@ function StocksPage({
         const intRes = await fetch(`/data/interesting-2026.json?v=${Date.now()}`);
         const intData = await intRes.json();
         if (intData.companies) {
-          interestingNames = new Set(intData.companies.map((c: any) => c.name));
+          // Store both full names and base names (without aliases in parentheses) for matching
+          for (const c of intData.companies) {
+            interestingNames.add(c.name);
+            // Also add the base name (before parentheses) for fuzzy matching
+            const baseName = c.name.replace(/\s*\(.*\)\s*$/, '').trim();
+            if (baseName !== c.name) interestingNames.add(baseName);
+          }
         }
       } catch {}
 
